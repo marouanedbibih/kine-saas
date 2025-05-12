@@ -1,0 +1,153 @@
+graph TD
+    %% Define actors
+    P[Patient]
+    K[Kinésithérapeute]
+    A[Assistant]
+    AD[Admin]
+    S[Système]
+    
+    %% Define styling
+    classDef usecase fill:#f9f9f9,stroke:#333,stroke-width:2px,color:#000;
+    classDef actor fill:#e1f5fe,stroke:#0277bd,stroke-width:2px,color:#000;
+    
+    %% Module 1: Gestion des Patients
+    subgraph M1[Module 1: Gestion des Patients]
+        UC1[Créer une fiche patient]
+        UC2[Consulter l'historique]
+        UC3[Importer documents/images]
+        UC4[Ajouter des notes privées]
+        UC5[Gérer les contacts urgents]
+        UC6[Exporter le dossier en PDF]
+    end
+    
+    %% Module 2: Gestion des Rendez-vous
+    subgraph M2[Module 2: Gestion des Rendez-vous]
+        UC7[Afficher le calendrier]
+        UC8[Prendre un rendez-vous en ligne]
+        UC9[Bloquer des créneaux]
+        UC10[Gérer les séances groupe/solo]
+        UC11[Envoyer des rappels automatiques]
+        UC12[Gérer les annulations et reports]
+        UC13[Gérer la liste d'attente]
+    end
+    
+    %% Module 3: Suivi des Séances
+    subgraph M3[Module 3: Suivi des Séances]
+        UC14[Enregistrer une séance]
+        UC15[Documenter les exercices]
+        UC16[Ajouter des photos avant/après]
+        UC17[Saisir des notes de progression]
+        UC18[Consulter historique des séances]
+        UC19[Planifier les séances suivantes]
+        UC20[Prescrire des exercices à domicile]
+    end
+    
+    %% Module 4: Paiements et Reçus
+    subgraph M4[Module 4: Paiements et Reçus]
+        UC21[Générer une facturation automatique]
+        UC22[Gérer les modes de paiement]
+        UC23[Éditer des reçus/factures]
+        UC24[Suivre les impayés]
+        UC25[Consulter statistiques revenus]
+        UC26[Exporter données comptables]
+        UC27[Gérer intégration assurances]
+    end
+    
+    %% Module 5: Statistiques et Rapports
+    subgraph M5[Module 5: Statistiques et Rapports]
+        UC28[Afficher tableau de bord]
+        UC29[Statistiques de fréquentation]
+        UC30[Analyse revenus par période]
+        UC31[Suivre taux d'occupation]
+        UC32[Identifier patients actifs]
+        UC33[Générer rapport mensuel]
+        UC34[Analyser tendances pathologiques]
+    end
+    
+    %% Module 6: Gestion Multi-utilisateurs
+    subgraph M6[Module 6: Gestion Multi-utilisateurs]
+        UC35[Créer des comptes]
+        UC36[Définir les permissions]
+        UC37[Partager l'agenda]
+        UC38[Gérer congés/absences]
+        UC39[Consulter journal d'activité]
+    end
+    
+    %% Actor connections to use cases
+    %% Patient
+    P --> UC2
+    P --> UC8
+    P --> UC12
+    P --> UC18
+    
+    %% Kinésithérapeute
+    K --> UC1
+    K --> UC2
+    K --> UC3
+    K --> UC4
+    K --> UC5
+    K --> UC6
+    K --> UC7
+    K --> UC9
+    K --> UC10
+    K --> UC12
+    K --> UC13
+    K --> UC14
+    K --> UC15
+    K --> UC16
+    K --> UC17
+    K --> UC18
+    K --> UC19
+    K --> UC20
+    K --> UC22
+    K --> UC25
+    K --> UC28
+    K --> UC29
+    K --> UC31
+    K --> UC32
+    K --> UC33
+    K --> UC34
+    K --> UC36
+    K --> UC37
+    K --> UC38
+    K --> UC39
+    
+    %% Assistant
+    A --> UC1
+    A --> UC2
+    A --> UC7
+    A --> UC8
+    A --> UC11
+    A --> UC12
+    A --> UC22
+    A --> UC23
+    A --> UC24
+    A --> UC37
+    
+    %% Admin
+    AD --> UC6
+    AD --> UC24
+    AD --> UC25
+    AD --> UC26
+    AD --> UC27
+    AD --> UC28
+    AD --> UC30
+    AD --> UC33
+    AD --> UC35
+    AD --> UC36
+    AD --> UC39
+    
+    %% Système
+    S --> UC11
+    S --> UC21
+    S --> UC27
+    S --> UC28
+    S --> UC29
+    S --> UC30
+    S --> UC31
+    S --> UC33
+    S --> UC34
+    
+    %% Apply styles
+    class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11,UC12,UC13,UC14,UC15,UC16,UC17,UC18,UC19,UC20,UC21,UC22,UC23,UC24,UC25,UC26,UC27,UC28,UC29,UC30,UC31,UC32,UC33,UC34,UC35,UC36,UC37,UC38,UC39 usecase;
+    class P,K,A,AD,S actor;

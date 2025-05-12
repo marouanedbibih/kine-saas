@@ -1,0 +1,213 @@
+classDiagram
+    %% Enum for roles
+    class Role {
+        <<enumeration>>
+        PATIENT
+        KINESITHERAPEUTE
+        ASSISTANT
+        ADMIN
+    }
+    
+    %% Base User class/interface
+    class User {
+        <<interface>>
+        +String id
+        +String email
+        +String password
+        +String nom
+        +String prenom
+        +Role role
+        +Date dateCreation
+        +boolean actif
+        +login(String email, String password)
+        +logout()
+        +updateProfile(Map attributs)
+        +changerMotDePasse(String ancien, String nouveau)
+    }
+    
+    %% Patient class
+    class Patient {
+        +String numeroPatient
+        +String telephone
+        +String adresse
+        +Date dateNaissance
+        +String contactUrgence
+        +DossierMedical dossierMedical
+        +List~RendezVous~ rendezVous
+        +prendreRendezVous(Date date, Kinesitherapeute praticien)
+        +consulterHistorique()
+        +exporterDossier()
+        +modifierInformations()
+    }
+    
+    %% Kinesitherapeute class
+    class Kinesitherapeute {
+        +String licenseNumber
+        +String specialisation
+        +List~Seance~ seances
+        +List~RendezVous~ agenda
+        +enregistrerSeance(Patient patient, List exercices)
+        +consulterAgenda(Date debut, Date fin)
+        +bloquerCreneaux(Date debut, Date fin)
+        +gererPatients()
+        +prescrireExercices(Patient patient, List exercices)
+    }
+    
+    %% Assistant class
+    class Assistant {
+        +List~String~ permissions
+        +Kinesitherapeute kinetherapeute
+        +prendreRendezVousPourKine(Patient patient, Date date)
+        +gererFacturation()
+        +rappelerRendezVous()
+    }
+    
+    %% Admin class
+    class Admin {
+        +creerCompte(String email, Role role)
+        +definirPermissions(User user, List permissions)
+        +consulterStatistiques(Date debut, Date fin)
+        +exporterDonnees(String format)
+        +gererRole(User user, Role nouveauRole)
+        +gererIntegrationAssurance()
+    }
+    
+    %% RendezVous class
+    class RendezVous {
+        +String id
+        +Date dateHeure
+        +int duree
+        +String type
+        +String statut
+        +Patient patient
+        +Kinesitherapeute praticien
+        +String notes
+        +annuler()
+        +reporter(Date nouvelleDate)
+        +confirmer()
+        +ajouterRappel()
+    }
+    
+    %% Seance class
+    class Seance {
+        +String id
+        +Date date
+        +int duree
+        +Patient patient
+        +Kinesitherapeute praticien
+        +List~Exercice~ exercices
+        +String notesProgression
+        +List~String~ photosAvantApres
+        +enregistrer()
+        +ajouterExercice(Exercice exercice)
+        +documenter(String notes)
+        +ajouterPhoto(String photo)
+    }
+    
+    %% Paiement class
+    class Paiement {
+        +String id
+        +double montant
+        +Date datePaiement
+        +String modePaiement
+        +String statut
+        +Facture facture
+        +String transactionId
+        +processer()
+        +annuler()
+        +rembourser()
+    }
+    
+    %% Facture class
+    class Facture {
+        +String id
+        +String numero
+        +Date dateFacture
+        +double montantTotal
+        +double montantPaye
+        +String statut
+        +Patient patient
+        +List~Seance~ seances
+        +List~Paiement~ paiements
+        +generer()
+        +envoyer()
+        +editer()
+        +marquerCommePayee()
+    }
+    
+    %% Statistique class
+    class Statistique {
+        +String id
+        +Date periodeDe
+        +Date periodeA
+        +String type
+        +Map~String, Double~ donnees
+        +genererTableauDeBord()
+        +analyserFrequentation()
+        +calculerRevenus()
+        +analyserTauxOccupation()
+        +identifierPatientsActifs()
+    }
+    
+    %% DossierMedical class
+    class DossierMedical {
+        +String id
+        +Patient patient
+        +Date dateCreation
+        +List~Seance~ historique
+        +List~String~ diagnostics
+        +List~String~ traitements
+        +List~Exercice~ exercicesPrescrit
+        +Map~String, String~ documents
+        +ajouterDiagnostic(String diagnostic)
+        +ajouterDocument(String titre, String contenu)
+        +exporterPDF()
+        +ajouterNote(String note, boolean privee)
+    }
+    
+    %% Exercice class
+    class Exercice {
+        +String id
+        +String nom
+        +String description
+        +String typeExercice
+        +int repetitions
+        +int series
+        +String niveauDifficulte
+        +String image
+        +String video
+        +String instructions
+        +prescrire(Patient patient, int frequence)
+        +modifier()
+        +cloner()
+    }
+    
+    %% Relationships
+    User <|-- Patient
+    User <|-- Kinesitherapeute
+    User <|-- Admin
+    Kinesitherapeute <|-- Assistant
+    
+    Patient "1" --> "0..*" RendezVous : inscrit
+    Kinesitherapeute "1" --> "0..*" RendezVous : traite
+    RendezVous "1" --> "0..1" Seance : génère
+    
+    Patient "1" --> "0..*" Seance : participe
+    Kinesitherapeute "1" --> "0..*" Seance : dirige
+    Seance "0..*" --> "0..*" Exercice : comprend
+    
+    Facture "1" --> "0..*" Paiement : comprend
+    Patient "1" --> "0..*" Facture : doit
+    Facture "1" --> "0..*" Seance : facture
+    
+    Patient "1" o-- "1" DossierMedical : possède
+    DossierMedical "1" --> "0..*" Exercice : prescrit
+    DossierMedical "1" --> "0..*" Seance : archive
+    
+    Statistique "1" --> "0..*" Seance : analyse
+    
+    %% Role enum association
+    User "1" --> "1" Role : a
+    
+    %% Additional relationships
+    Assistant "1" --> "1" Kinesitherapeute : assiste

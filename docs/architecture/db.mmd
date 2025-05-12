@@ -1,0 +1,282 @@
+erDiagram
+    %% Base User table (inheritance strategy)
+    User {
+        string id PK "NOT NULL, UUID"
+        string email UK "NOT NULL, UNIQUE"
+        string password "NOT NULL, HASHED"
+        string nom "NOT NULL"
+        string prenom "NOT NULL"
+        string role "NOT NULL, ENUM"
+        date dateCreation "NOT NULL, DEFAULT CURRENT_TIMESTAMP"
+        boolean actif "NOT NULL, DEFAULT TRUE"
+        date lastLogin
+        string resetToken
+        date resetTokenExpiry
+    }
+    
+    %% Patient table (inherits from User)
+    Patient {
+        string user_id PK,FK "NOT NULL"
+        string numeroPatient UK "NOT NULL, UNIQUE, AUTO_INCREMENT"
+        string telephone "NOT NULL"
+        string adresse  
+        date dateNaissance
+        string contactUrgence
+        string commentaires
+        string profession
+        string assuranceInfo
+    }
+    
+    %% Kinesitherapeute table (inherits from User)
+    Kinesitherapeute {
+        string user_id PK,FK "NOT NULL"
+        string licenseNumber UK "NOT NULL, UNIQUE"
+        string specialisation
+        string diplomes
+        date dateEmbauche
+        float tauxHoraire "DEFAULT 0.0"
+        int maxPatientsParJour "DEFAULT 8"
+    }
+    
+    %% Assistant table (inherits from Kinesitherapeute)
+    Assistant {
+        string kinesitherapeute_id PK,FK "NOT NULL"
+        string user_id FK "NOT NULL"
+        string permissions "JSON"
+        boolean canManagePayments "DEFAULT FALSE"
+        boolean canScheduleAppointments "DEFAULT TRUE"
+    }
+    
+    %% Admin table (inherits from User)
+    Admin {
+        string user_id PK,FK "NOT NULL"
+        string adminLevel "ENUM: SUPER_ADMIN, CLINIC_ADMIN"
+        string clinicId FK
+    }
+    
+    %% Clinic table (for multi-clinic support)
+    Clinic {
+        string id PK "NOT NULL, UUID"
+        string nom "NOT NULL"
+        string adresse "NOT NULL"
+        string telephone
+        string email
+        string siren
+        boolean actif "DEFAULT TRUE"
+        date dateCreation "DEFAULT CURRENT_TIMESTAMP"
+    }
+    
+    %% RendezVous table
+    RendezVous {
+        string id PK "NOT NULL, UUID"
+        date dateHeure "NOT NULL"
+        int duree "NOT NULL, DEFAULT 30"
+        string type "ENUM: CONSULTATION, SEANCE, BILAN"
+        string statut "ENUM: CONFIRMED, PENDING, CANCELLED, COMPLETED"
+        string patient_id FK "NOT NULL"
+        string kinesitherapeute_id FK "NOT NULL"
+        string notes
+        boolean rappelEnvoye "DEFAULT FALSE"
+        date dateRappel
+        string typeRappel "ENUM: EMAIL, SMS"
+    }
+    
+    %% Seance table
+    Seance {
+        string id PK "NOT NULL, UUID"
+        date date "NOT NULL"
+        int duree "NOT NULL"
+        string patient_id FK "NOT NULL"
+        string kinesitherapeute_id FK "NOT NULL"
+        string notesProgression
+        string photos "JSON"
+        string objectifs
+        string resultats
+        float douleurAvant "0-10"
+        float douleurApres "0-10"
+        boolean isFacturee "DEFAULT FALSE"
+    }
+    
+    %% Seance_Exercice junction table (many-to-many)
+    Seance_Exercice {
+        string seance_id PK,FK "NOT NULL"
+        string exercice_id PK,FK "NOT NULL"
+        int repetitionsEffectuees
+        string notesExecutions
+        boolean exerciceComplete "DEFAULT FALSE"
+    }
+    
+    %% Exercice table
+    Exercice {
+        string id PK "NOT NULL, UUID"
+        string nom "NOT NULL"
+        string description
+        string typeExercice "ENUM: MOBILITE, FORCE, EQUILIBRE, PROPRIOCEPTION"
+        int repetitions "DEFAULT 0"
+        int series "DEFAULT 0"
+        string niveauDifficulte "ENUM: FACILE, MOYEN, DIFFICILE"
+        string image "URL"
+        string video "URL"
+        string instructions
+        string materielNecessaire
+        boolean isTemplate "DEFAULT TRUE"
+        string clinic_id FK
+    }
+    
+    %% Facture table
+    Facture {
+        string id PK "NOT NULL, UUID"
+        string numero UK "NOT NULL, UNIQUE, AUTO_INCREMENT"
+        date dateFacture "NOT NULL, DEFAULT CURRENT_TIMESTAMP"
+        float montantTotal "NOT NULL, DEFAULT 0.0"
+        float montantPaye "DEFAULT 0.0"
+        string statut "ENUM: DRAFT, SENT, PAID, OVERDUE, CANCELLED"
+        string patient_id FK "NOT NULL"
+        float tva "DEFAULT 0.0"
+        date dateEcheance
+        string notes
+    }
+    
+    %% Facture_Seance junction table
+    Facture_Seance {
+        string facture_id PK,FK "NOT NULL"
+        string seance_id PK,FK "NOT NULL"
+        float montantFacture "NOT NULL"
+    }
+    
+    %% Paiement table
+    Paiement {
+        string id PK "NOT NULL, UUID"
+        float montant "NOT NULL"
+        date datePaiement "NOT NULL"
+        string modePaiement "ENUM: CASH, CARD, CHECK, TRANSFER, INSURANCE"
+        string statut "ENUM: PENDING, COMPLETED, FAILED, REFUNDED"
+        string facture_id FK "NOT NULL"
+        string transactionId
+        string numeroRecu
+        string detailsAssurance "JSON"
+    }
+    
+    %% DossierMedical table
+    DossierMedical {
+        string id PK "NOT NULL, UUID"
+        string patient_id FK "NOT NULL"
+        date dateCreation "NOT NULL, DEFAULT CURRENT_TIMESTAMP"
+        string diagnostics "JSON"
+        string traitements "JSON"
+        string documents "JSON"
+        string allergies
+        string antecedentsMedicaux
+        string medicaments "JSON"
+        string contactMedecin
+        date derniereModification
+    }
+    
+    %% DossierMedical_Exercice table (for prescribed exercises)
+    DossierMedical_Exercice {
+        string dossier_id PK,FK "NOT NULL"
+        string exercice_id PK,FK "NOT NULL"
+        int frequence "Times per week"
+        date datePrescription "NOT NULL"
+        date dateFinPrescription
+        string notesSpeciales
+    }
+    
+    %% DossierMedical_Seance table (for archived sessions)
+    DossierMedical_Seance {
+        string dossier_id PK,FK "NOT NULL"
+        string seance_id PK,FK "NOT NULL"
+        date dateArchivage "DEFAULT CURRENT_TIMESTAMP"
+    }
+    
+    %% Statistique table
+    Statistique {
+        string id PK "NOT NULL, UUID"
+        date periodeDe "NOT NULL"
+        date periodeA "NOT NULL"
+        string type "ENUM: FREQUENTATION, REVENUS, OCCUPATION, PATIENTS"
+        string donnees "JSON"
+        string clinic_id FK
+        string generePar FK "User who generated report"
+        date dateGeneration "DEFAULT CURRENT_TIMESTAMP"
+        boolean isPublic "DEFAULT FALSE"
+    }
+    
+    %% Configuration table (for system settings)
+    Configuration {
+        string id PK "NOT NULL, UUID"
+        string key "NOT NULL, UNIQUE"
+        string value "JSON"
+        string type "ENUM: GLOBAL, CLINIC, USER"
+        string owner_id FK "User, Clinic or NULL for global"
+        date lastModified "DEFAULT CURRENT_TIMESTAMP"
+        string modifiedBy FK
+    }
+    
+    %% Notification table (for system notifications)
+    Notification {
+        string id PK "NOT NULL, UUID"
+        string user_id FK "NOT NULL"
+        string type "ENUM: APPOINTMENT, PAYMENT, SYSTEM, REMINDER"
+        string title "NOT NULL"
+        string message "NOT NULL"
+        boolean isRead "DEFAULT FALSE"
+        date dateCreated "DEFAULT CURRENT_TIMESTAMP"
+        date dateRead
+        string relatedEntity "JSON"
+    }
+    
+    %% Creneau table (for time slot management)
+    Creneau {
+        string id PK "NOT NULL, UUID"
+        string kinesitherapeute_id FK "NOT NULL"
+        date dateDebut "NOT NULL"
+        date dateFin "NOT NULL"
+        string type "ENUM: AVAILABLE, BLOCKED, VACATION"
+        boolean isRecurring "DEFAULT FALSE"
+        string recurrencePattern "JSON"
+        string raison
+    }
+    
+    %% Relationships with cascade rules
+    User ||--|| Patient : inherits "CASCADE ON DELETE"
+    User ||--|| Kinesitherapeute : inherits "CASCADE ON DELETE"
+    User ||--|| Admin : inherits "CASCADE ON DELETE"
+    Kinesitherapeute ||--|| Assistant : specializes "CASCADE ON DELETE"
+    User ||--|| Assistant : also_inherits "CASCADE ON DELETE"
+    
+    Admin ||--o| Clinic : manages "SET NULL ON DELETE"
+    Clinic ||--o{ Exercice : contains "CASCADE ON DELETE"
+    Clinic ||--o{ Configuration : has_settings "CASCADE ON DELETE"
+    
+    Patient ||--o{ RendezVous : has_scheduled "CASCADE ON DELETE"
+    Kinesitherapeute ||--o{ RendezVous : provides "SET NULL ON DELETE"
+    Kinesitherapeute ||--o{ Creneau : offers "CASCADE ON DELETE"
+    
+    Patient ||--o{ Seance : participates_in "CASCADE ON DELETE"
+    Kinesitherapeute ||--o{ Seance : conducts "SET NULL ON DELETE"
+    
+    Seance ||--o{ Seance_Exercice : includes "CASCADE ON DELETE"
+    Exercice ||--o{ Seance_Exercice : performed_in "CASCADE ON DELETE"
+    
+    Patient ||--|| DossierMedical : owns "CASCADE ON DELETE"
+    
+    DossierMedical ||--o{ DossierMedical_Exercice : prescribes "CASCADE ON DELETE"
+    Exercice ||--o{ DossierMedical_Exercice : prescribed_in "CASCADE ON DELETE"
+    
+    DossierMedical ||--o{ DossierMedical_Seance : archives "CASCADE ON DELETE"
+    Seance ||--o{ DossierMedical_Seance : archived_in "CASCADE ON DELETE"
+    
+    Patient ||--o{ Facture : receives "CASCADE ON DELETE"
+    Facture ||--o{ Paiement : processed_by "CASCADE ON DELETE"
+    
+    Facture ||--o{ Facture_Seance : bills "CASCADE ON DELETE"
+    Seance ||--o{ Facture_Seance : billed_in "CASCADE ON DELETE"
+    
+    Statistique ||--o{ Seance : analyzes "NO ACTION ON DELETE"
+    Statistique ||--o| Clinic : belongs_to "SET NULL ON DELETE"
+    User ||--o{ Statistique : generates "SET NULL ON DELETE"
+    
+    User ||--o{ Notification : receives "CASCADE ON DELETE"
+    User ||--o{ Configuration : customizes "CASCADE ON DELETE"
+    User ||--o{ Configuration : modifies "SET NULL ON DELETE"

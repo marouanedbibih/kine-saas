@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: kine-saas-postgres
+    ports:
+      - "5433:5432"
+    restart: always
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "kine_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.1'
+          memory: 256M
+    environment:
+      POSTGRES_USER: kine_user
+      POSTGRES_ROOT_PASSWORD: root
+      POSTGRES_PASSWORD: kine_password
+      POSTGRES_DB: kine_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - kine_network
+
+volumes:
+  postgres_data:
+   name: kine_postgres_data
+
+networks:
+  kine_network:
+    driver: bridge
