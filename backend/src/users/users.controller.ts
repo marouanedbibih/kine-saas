@@ -27,9 +27,9 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto, ChangePasswordDto } from './dto/update-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
 
-@ApiTags('users')
+@ApiTags('api/users')
 @ApiBearerAuth()
-@Controller('users')
+@Controller('api/users')
 // @UseGuards(JwtAuthGuard, RolesGuard)
 // @Roles(UserRole.ADMIN)
 export class UsersController {
