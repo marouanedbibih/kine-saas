@@ -1,0 +1,48 @@
+# Node modules (avoid huge size)
+**/node_modules
+
+# Compiled output
+**/dist
+**/.next
+**/.turbo
+
+# Logs
+logs
+*.log
+
+# Runtime files
+*.pid
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Docker and build config
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose.*.yml
+docker/
+docs/
+run.sh
+
+# Test and debug
+**/__tests__/
+**/test/
+**/*.spec.ts
+**/*.test.ts
+
+# Package managers and lock files (optional)
+*.lock
+pnpm-lock.yaml
+yarn.lock
+
+# IDE/editor folders
+.vscode/
+.idea/
+*.swp

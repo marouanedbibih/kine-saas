@@ -1,0 +1,84 @@
+# -----------------------
+# Stage 1: Build
+# -----------------------
+    FROM node:20-alpine AS builder
+
+    # Set working directory
+    WORKDIR /app
+    
+    # Define a base folder variable for the frontend/backend folder structure
+    ENV BASE_FOLDER=apis
+    
+    # Copy only package files from the specified folder
+    COPY ${BASE_FOLDER}/package*.json ./
+    
+    # Install all dependencies including devDependencies
+    RUN npm install
+    
+    # Copy source files and config from base folder
+    COPY ${BASE_FOLDER}/tsconfig*.json ./
+    COPY ${BASE_FOLDER}/src ./src
+    
+    # Compile TypeScript
+    RUN npm run build
+    
+    
+    # -----------------------
+    # Stage 2: Development
+    # -----------------------
+    FROM node:20-alpine AS development
+
+    ENV BASE_FOLDER=apis 
+
+    
+    # Set working directory
+    WORKDIR /app
+    
+    # Install bash (optional but useful for shell scripts)
+    RUN apk add --no-cache bash
+    
+    
+    # Arguments for secrets and config
+    ARG JWT_ACCESS_SECRET
+    ARG JWT_REFRESH_SECRET
+    ARG JWT_ACCESS_EXPIRES_IN
+    ARG JWT_REFRESH_EXPIRES_IN
+    ARG DB_HOST
+    ARG DB_PORT
+    ARG DB_USERNAME
+    ARG DB_PASSWORD
+    ARG DB_NAME
+
+    # Set environment variables
+    ENV NODE_ENV=development
+    ENV JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+    ENV JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+    ENV JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN}
+    ENV JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN}
+    ENV DB_HOST=${DB_HOST}
+    ENV DB_PORT=${DB_PORT}
+    ENV DB_USERNAME=${DB_USERNAME}
+    ENV DB_PASSWORD=${DB_PASSWORD}
+    ENV DB_NAME=${DB_NAME}
+
+    
+    # Copy package files and install all dependencies (again for dev)
+    COPY ${BASE_FOLDER}/package*.json ./
+    RUN npm install
+    
+    # Copy from build stage
+    COPY --from=builder /app/dist ./dist
+    COPY --from=builder /app/node_modules ./node_modules
+    
+    # Copy other relevant project files
+    COPY ${BASE_FOLDER} .
+    
+    # Run seeding script (optional - move to entrypoint for better control)
+    # RUN npm run seed
+    
+    # Expose dev port (adjust if needed)
+    EXPOSE 3001
+    
+    # Default dev command
+    CMD ["npm", "run", "start:dev"]
+    
