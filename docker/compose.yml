@@ -7,7 +7,7 @@ services:
       - "5433:5432"
     restart: always
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "kine_user"]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,9 +26,9 @@ services:
           cpus: '0.1'
           memory: 256M
     environment:
-      POSTGRES_USER: kine_user
+      POSTGRES_USER: postgres
       POSTGRES_ROOT_PASSWORD: root
-      POSTGRES_PASSWORD: kine_password
+      POSTGRES_PASSWORD: root
       POSTGRES_DB: kine_db
     volumes:
       - postgres_data:/var/lib/postgresql/data

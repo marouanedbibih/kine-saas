@@ -2,7 +2,7 @@
 /* eslint-disable prettier/prettier */
 import { User, UserRole } from '../users/entities/user.entity';
 import { Patient } from '../patients/entities/patient.entity';
-import { Kinesitherapeute } from '../practitioners/entities/kinesitherapeute.entity';
+import { Kinesitherapeute } from '../kinesitherapeute/entities/kinesitherapeute.entity';
 import * as bcrypt from 'bcrypt';
 import { faker } from '@faker-js/faker';
 import { AppDataSource } from './data-source';

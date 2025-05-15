@@ -27,6 +27,11 @@ run_docker_dev() {
     docker compose --env-file docker/.env.dev -f docker/compose.yml -f docker/compose.dev.yml up --build
 }
 
+shutdown_docker_dev() {
+    echo "Shutting down Docker containers..."
+    docker compose -f docker/compose.yml -f docker/compose.dev.yml down -v --remove-orphans
+}
+
 # run_db &
 # run_backend &
 # run_web &

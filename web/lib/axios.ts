@@ -1,5 +1,6 @@
 // import { parseCookies } from 'nookies';
 // lib/axios.ts
+import { jwtService } from '@/services/jwt.services';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Define types for our API responses
@@ -17,7 +18,6 @@ export interface ApiError {
 
 // Constants
 const API_URL = process.env.NEXT_PUBLIC_API_URL ;
-const TOKEN_KEY = 'auth_token';
 const TIMEOUT = 10000; // 10 seconds
 
 // Create a custom axios instance
@@ -35,14 +35,12 @@ const createAxiosInstance = (config?: AxiosRequestConfig): AxiosInstance => {
   // Add request interceptor
   axiosInstance.interceptors.request.use(
     (config) => {
-      // Get token from cookies (works in both client and SSR)
-      // const cookies = parseCookies();
-      // const token = cookies[TOKEN_KEY];
 
-      // If token exists, add it to the headers
-      // if (token && config.headers) {
-      //   config.headers.Authorization = `Bearer ${token}`;
-      // }
+      const token = jwtService.getToken();
+  
+      if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
 
       return config;
     },

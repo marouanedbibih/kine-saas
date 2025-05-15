@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 // Import all entities explicitly
 import { User } from '../users/entities/user.entity';
 import { Patient } from '../patients/entities/patient.entity';
-import { Kinesitherapeute } from '../practitioners/entities/kinesitherapeute.entity';
+import { Kinesitherapeute } from '../kinesitherapeute/entities/kinesitherapeute.entity';
 
 config();
 

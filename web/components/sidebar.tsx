@@ -38,6 +38,17 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       ],
     },
     {
+      title: "Users",
+      href: "/users",
+      icon: Users,
+      submenu: [
+        { title: "User List", href: "/users" },
+        { title: "Add Users", href: "/users/add" },
+        // { title: "User Schedule", href: "/users/schedule" },
+        // { title: "Specializations", href: "/users/specializations" },
+      ],
+    },
+    {
       title: "Doctors",
       href: "/doctors",
       icon: Users,

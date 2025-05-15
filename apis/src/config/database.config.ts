@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Patient } from 'src/patients/entities/patient.entity';
-import { Kinesitherapeute } from 'src/practitioners/entities/kinesitherapeute.entity';
+import { Kinesitherapeute } from 'src/kinesitherapeute/entities/kinesitherapeute.entity';
 import { User } from 'src/users/entities/user.entity';
 
 export default registerAs(

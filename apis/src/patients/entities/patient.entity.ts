@@ -6,7 +6,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Kinesitherapeute } from '../../practitioners/entities/kinesitherapeute.entity';
+import { Kinesitherapeute } from '../../kinesitherapeute/entities/kinesitherapeute.entity';
 
 @Entity('patients')
 export class Patient {

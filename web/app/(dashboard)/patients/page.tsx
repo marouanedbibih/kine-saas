@@ -18,6 +18,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Download, Filter, MoreHorizontal, Plus, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePatientContext } from "@/hooks/usePatients";
 
 // Sample patient data
 const patientsData = [
@@ -283,6 +284,8 @@ export default function PatientsPage() {
     });
   };
 
+  const { patients, loading } = usePatientContext();
+
   return (
     <>
       <div className="flex flex-col gap-5">
@@ -491,43 +494,28 @@ export default function PatientsPage() {
               <Table className="whitespace-nowrap">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead className="table-cell">Age/Gender</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="table-cell">Last Visit</TableHead>
-                    <TableHead className="table-cell">Condition</TableHead>
-                    <TableHead className="table-cell">Doctor</TableHead>
+                    <TableHead>Numero Patient</TableHead>
+                    <TableHead className="table-cell">First Name</TableHead>
+                    <TableHead className="table-cell">Last Name</TableHead>
+                    <TableHead className="table-cell">Phone</TableHead>
+                    <TableHead className="table-cell">Address</TableHead>
+                    <TableHead className="table-cell">Date of Birth</TableHead>
+                    <TableHead className="table-cell">Emergency Contact</TableHead>
+                    <TableHead className="table-cell">Kinesitherapeute</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody className="whitespace-nowrap">
-                  {filteredPatients.map((patient) => (
+                <TableBody>
+                  {patients.map((patient) => (
                     <TableRow key={patient.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={patient.image || "/user-2.png"} alt={patient.name} />
-                            <AvatarFallback>{patient.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{patient.name}</p>
-                            <p className="text-sm text-muted-foreground md:hidden">
-                              {patient.age} • {patient.gender}
-                            </p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="table-cell">
-                        {patient.age} • {patient.gender}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={patient.status === "Active" ? "default" : "secondary"} className={patient.status === "Active" ? "bg-green-500 text-gray-700" : "bg-yellow-500 text-neutral-700"}>
-                          {patient.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="table-cell">{patient.lastVisit}</TableCell>
-                      <TableCell className="table-cell">{patient.condition}</TableCell>
-                      <TableCell className="table-cell">{patient.doctor}</TableCell>
+                      <TableCell>{patient.numeroPatient}</TableCell>
+                      <TableCell className="table-cell">{patient.firstName}</TableCell>
+                      <TableCell className="table-cell">{patient.lastName}</TableCell>
+                      <TableCell className="table-cell">{patient.telephone}</TableCell>
+                      <TableCell className="table-cell">{patient.adresse}</TableCell>
+                      <TableCell className="table-cell">{patient.dateNaissance ?? "N/A"}</TableCell>
+                      <TableCell className="table-cell">{patient.contactUrgence}</TableCell>
+                      <TableCell className="table-cell">{patient.kinesitherapeute ? `${patient.kinesitherapeute.firstName} ${patient.kinesitherapeute.lastName}` : "N/A"}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

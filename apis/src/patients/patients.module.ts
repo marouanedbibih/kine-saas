@@ -3,7 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PatientsController } from './patients.controller';
 import { PatientsService } from './patients.service';
 import { Patient } from './entities/patient.entity';
-import { Kinesitherapeute } from '../practitioners/entities/kinesitherapeute.entity';
+import { Kinesitherapeute } from '../kinesitherapeute/entities/kinesitherapeute.entity';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Patient, Kinesitherapeute])],

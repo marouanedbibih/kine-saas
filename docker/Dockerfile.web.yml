@@ -1,0 +1,48 @@
+# -------------------------
+# Stage 1: Build
+# -------------------------
+    FROM node:20-alpine AS builder
+
+    WORKDIR /app
+    
+    # Install pnpm
+    RUN corepack enable && corepack prepare pnpm@latest --activate
+    
+    # Accept NEXT_PUBLIC env variables at build time
+    ARG NEXT_PUBLIC_API_URL
+    ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    
+    # Copy only deps first for cache efficiency
+    COPY web/pnpm-lock.yaml web/package.json ./
+    RUN pnpm install --frozen-lockfile
+    
+    # Copy the rest of the project
+    COPY web/ .
+    
+    # Build the Next.js app (env is used at build time for static pages)
+    RUN pnpm build
+    
+    
+    # -------------------------
+    # Stage 2: Development
+    # -------------------------
+    FROM node:20-alpine AS dev
+    
+    WORKDIR /app
+    
+    # Install pnpm
+    RUN corepack enable && corepack prepare pnpm@latest --activate
+    
+    # Accept env vars at runtime
+    ARG NEXT_PUBLIC_API_URL
+    ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+    
+    # Copy dependencies and built files
+    COPY --from=builder /app /app
+    
+    # Expose Next.js default port
+    EXPOSE 3000
+    
+    # Run in development mode
+    CMD ["pnpm", "dev"]
+    
