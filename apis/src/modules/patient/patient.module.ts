@@ -9,10 +9,10 @@ import { EmergencyContactModule } from '../emergency-contact/emergency-contact.m
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Patient]), 
+    TypeOrmModule.forFeature([Patient]),
     MedicalRecordModule,
     InsuranceInfoModule,
-    EmergencyContactModule
+    EmergencyContactModule,
   ],
   controllers: [PatientController],
   providers: [PatientService],

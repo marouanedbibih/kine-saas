@@ -1,4 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { Kinesitherapeute } from '@/kinesitherapeute/entities/kinesitherapeute.entity';
+import { ConsentDocument } from '@/modules/documents/consent-document.entity';
+import { EmergencyContact } from '@/modules/emergency-contact/emergency-contact.entity';
+import { InsuranceInfo } from '@/modules/insurance-info/insurance-info.entity';
+import { MedicalRecord } from '@/modules/medical-record/medical-record.entity';
+import { Patient } from '@/modules/patient/patient.entity';
+import { User } from '@/users/entities/user.entity';
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
@@ -19,9 +26,13 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_NAME || 'kine_saas',
     entities: [
-      join(__dirname, '..', 'modules', '**', '*.entity.{ts,js}'),
-      join(__dirname, '..', 'users', '**', '*.entity.{ts,js}'),
-      join(__dirname, '..', 'kinesitherapeute', '**', '*.entity.{ts,js}'),
+      User,
+      Patient,
+      ConsentDocument,
+      EmergencyContact,
+      InsuranceInfo,
+      MedicalRecord,
+      Kinesitherapeute,
     ],
     migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
     synchronize: true,

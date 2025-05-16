@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import {
   ApiTags,

@@ -40,7 +40,7 @@ import { extname } from 'path';
 
 @ApiTags('patients')
 @ApiBearerAuth()
-@Controller('patients')
+@Controller('/api/patients')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PatientController {
   constructor(private readonly patientService: PatientService) {}

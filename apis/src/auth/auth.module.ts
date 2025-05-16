@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
@@ -18,7 +19,7 @@ import { User } from '../users/entities/user.entity';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get('JWT_ACCESS_SECRET'),
-        signOptions: { 
+        signOptions: {
           expiresIn: configService.get('JWT_ACCESS_EXPIRES_IN'),
         },
       }),
