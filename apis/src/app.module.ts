@@ -8,19 +8,11 @@ import databaseConfig from './config/database.config';
 
 // Core modules
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
 
 // Guards
 import { RolesGuard } from './common/guards/roles.guard';
-import { PatientsModule } from './patients/patients.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-
-// Optional future modules
-// import { PatientsModule } from './patients/patients.module';
-// import { AppointmentsModule } from './appointments/appointments.module';
-// import { SessionsModule } from './sessions/sessions.module';
-// import { BillingModule } from './billing/billing.module';
-// import { AnalyticsModule } from './analytics/analytics.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -48,12 +40,6 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
     // Feature modules
     AuthModule,
     UsersModule,
-    PatientsModule,
-    // PatientsModule,
-    // AppointmentsModule,
-    // SessionsModule,
-    // BillingModule,
-    // AnalyticsModule,
   ],
   providers: [
     // Apply guards globally
