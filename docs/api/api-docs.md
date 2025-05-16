@@ -2,6 +2,10 @@
 
 This document provides an overview of the main API endpoints in the KINE-SAAS system.
 
+For interactive API documentation, you can access the Swagger UI at `/api/docs` when the application is running.
+
+For information on how to use and maintain Swagger documentation in this project, please refer to the [Swagger Integration Guide](./swagger-guide.md).
+
 ## Authentication Endpoints
 
 | Endpoint | Method | Description |
