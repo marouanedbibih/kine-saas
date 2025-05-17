@@ -18,7 +18,7 @@ export class EmergencyContact {
   @Column({ nullable: true })
   email: string;
 
-  @ManyToOne(() => Patient, (patient) => patient.emergencyContacts, {
+  @ManyToOne(() => Patient, (patient) => patient.emergencyContact, {
     onDelete: 'SET NULL',
   })
   patient: Patient;

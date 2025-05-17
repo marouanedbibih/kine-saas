@@ -1,7 +1,5 @@
 "use client";
 
-import type React from "react";
-
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -13,278 +11,179 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Filter, MoreHorizontal, Plus, Search, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { usePatientsList } from "@/hooks/usePatients";
+import { Gender } from "@/types/patient";
+import { format } from "date-fns";
+import { Download, Edit, Filter, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePatientContext } from "@/hooks/usePatients";
-
-// Sample patient data
-const patientsData = [
-  {
-    id: "1",
-    name: "John Smith",
-    image: "/colorful-abstract-shapes.png",
-    age: 45,
-    gender: "Male",
-    status: "Active",
-    lastVisit: "2023-06-15",
-    condition: "Hypertension",
-    doctor: "Dr. Sarah Johnson",
-    email: "john.smith@example.com",
-    phone: "+1 (555) 123-4567",
-  },
-  {
-    id: "2",
-    name: "Emily Davis",
-    image: "/colorful-abstract-shapes.png",
-    age: 32,
-    gender: "Female",
-    status: "Active",
-    lastVisit: "2023-07-02",
-    condition: "Diabetes Type 2",
-    doctor: "Dr. Michael Chen",
-    email: "emily.davis@example.com",
-    phone: "+1 (555) 234-5678",
-  },
-  {
-    id: "3",
-    name: "Robert Wilson",
-    image: "/user-3.png",
-    age: 58,
-    gender: "Male",
-    status: "Inactive",
-    lastVisit: "2023-05-20",
-    condition: "Arthritis",
-    doctor: "Dr. Lisa Patel",
-    email: "robert.wilson@example.com",
-    phone: "+1 (555) 345-6789",
-  },
-  {
-    id: "4",
-    name: "Jessica Brown",
-    image: "/user-3.png",
-    age: 27,
-    gender: "Female",
-    status: "Active",
-    lastVisit: "2023-07-10",
-    condition: "Asthma",
-    doctor: "Dr. James Wilson",
-    email: "jessica.brown@example.com",
-    phone: "+1 (555) 456-7890",
-  },
-  {
-    id: "5",
-    name: "Michael Johnson",
-    image: "/user-3.png",
-    age: 41,
-    gender: "Male",
-    status: "Active",
-    lastVisit: "2023-06-28",
-    condition: "Migraine",
-    doctor: "Dr. Emily Rodriguez",
-    email: "michael.johnson@example.com",
-    phone: "+1 (555) 567-8901",
-  },
-  {
-    id: "6",
-    name: "Sarah Thompson",
-    image: "/user-3.png",
-    age: 63,
-    gender: "Female",
-    status: "Active",
-    lastVisit: "2023-07-05",
-    condition: "Osteoporosis",
-    doctor: "Dr. Robert Kim",
-    email: "sarah.thompson@example.com",
-    phone: "+1 (555) 678-9012",
-  },
-  {
-    id: "7",
-    name: "David Lee",
-    image: "/user-3.png",
-    age: 52,
-    gender: "Male",
-    status: "Inactive",
-    lastVisit: "2023-04-18",
-    condition: "COPD",
-    doctor: "Dr. Jennifer Martinez",
-    email: "david.lee@example.com",
-    phone: "+1 (555) 789-0123",
-  },
-  {
-    id: "8",
-    name: "Amanda Clark",
-    image: "/user-3.png",
-    age: 36,
-    gender: "Female",
-    status: "Active",
-    lastVisit: "2023-07-08",
-    condition: "Anxiety",
-    doctor: "Dr. Thomas Wright",
-    email: "amanda.clark@example.com",
-    phone: "+1 (555) 890-1234",
-  },
-  {
-    id: "9",
-    name: "James Rodriguez",
-    image: "/user-3.png",
-    age: 70,
-    gender: "Male",
-    status: "Active",
-    lastVisit: "2023-06-30",
-    condition: "Coronary Artery Disease",
-    doctor: "Dr. Sarah Johnson",
-    email: "james.rodriguez@example.com",
-    phone: "+1 (555) 901-2345",
-  },
-  {
-    id: "10",
-    name: "Lisa Chen",
-    image: "/user-3.png",
-    age: 29,
-    gender: "Female",
-    status: "Active",
-    lastVisit: "2023-07-12",
-    condition: "Allergies",
-    doctor: "Dr. Michael Chen",
-    email: "lisa.chen@example.com",
-    phone: "+1 (555) 012-3456",
-  },
-];
-
-// Define filter types
-type FilterState = {
-  search: string;
-  status: string;
-  gender: string[];
-  ageRange: [number, number];
-  conditions: string[];
-  doctors: string[];
-};
 
 export default function PatientsPage() {
-  // State for filters
-  const [filters, setFilters] = useState<FilterState>({
-    search: "",
-    status: "all",
-    gender: [],
-    ageRange: [0, 100],
-    conditions: [],
-    doctors: [],
-  });
+  const { toast } = useToast();
+  const {
+    patients,
+    loading,
+    error,
+    filters,
+    setFilters,
+    pagination,
+    refreshPatients,
+    // deletePatient
+  } = usePatientsList();
 
-  // State for filtered patients
-  const [filteredPatients, setFilteredPatients] = useState(patientsData);
-
-  // State for active filter count
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPatients, setSelectedPatients] = useState<string[]>([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState<string | null>(null);
   const [activeFilterCount, setActiveFilterCount] = useState(0);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  // Extract unique conditions and doctors for filter options
-  const uniqueConditions = Array.from(new Set(patientsData.map((patient) => patient.condition)));
-  const uniqueDoctors = Array.from(new Set(patientsData.map((patient) => patient.doctor)));
-
-  // Apply filters when filters state changes
-  useEffect(() => {
-    let result = patientsData;
-
-    // Apply search filter
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      result = result.filter((patient) => patient.name.toLowerCase().includes(searchLower) || patient.email.toLowerCase().includes(searchLower) || patient.condition.toLowerCase().includes(searchLower) || patient.doctor.toLowerCase().includes(searchLower) || patient.phone.includes(filters.search));
-    }
-
-    // Apply status filter
-    if (filters.status !== "all") {
-      result = result.filter((patient) => patient.status === filters.status);
-    }
-
-    // Apply gender filter
-    if (filters.gender.length > 0) {
-      result = result.filter((patient) => filters.gender.includes(patient.gender));
-    }
-
-    // Apply age range filter
-    result = result.filter((patient) => patient.age >= filters.ageRange[0] && patient.age <= filters.ageRange[1]);
-
-    // Apply conditions filter
-    if (filters.conditions.length > 0) {
-      result = result.filter((patient) => filters.conditions.includes(patient.condition));
-    }
-
-    // Apply doctors filter
-    if (filters.doctors.length > 0) {
-      result = result.filter((patient) => filters.doctors.includes(patient.doctor));
-    }
-
-    setFilteredPatients(result);
-
-    // Calculate active filter count
-    let count = 0;
-    if (filters.search) count++;
-    if (filters.status !== "all") count++;
-    if (filters.gender.length > 0) count++;
-    if (filters.ageRange[0] > 0 || filters.ageRange[1] < 100) count++;
-    if (filters.conditions.length > 0) count++;
-    if (filters.doctors.length > 0) count++;
-
-    setActiveFilterCount(count);
-  }, [filters]);
+  // Gender filter
+  const [genderFilter, setGenderFilter] = useState<Gender[]>([]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters((prev) => ({ ...prev, search: e.target.value }));
+    setSearchTerm(e.target.value);
   };
 
-  // Handle status filter change
-  const handleStatusChange = (value: string) => {
-    setFilters((prev) => ({ ...prev, status: value }));
+  // Apply search filter with debounce
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setFilters(prev => ({
+        ...prev,
+        search: searchTerm,
+        page: 1 // Reset to first page when searching
+      }));
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, setFilters]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setFilters(prev => ({
+      ...prev,
+      page
+    }));
+  };
+
+  // Handle patient selection for bulk actions
+  const handlePatientSelection = (patientId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedPatients(prev => [...prev, patientId]);
+    } else {
+      setSelectedPatients(prev => prev.filter(id => id !== patientId));
+    }
+  };
+
+  // Handle bulk selection
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedPatients(patients.map(patient => patient.id));
+    } else {
+      setSelectedPatients([]);
+    }
   };
 
   // Handle gender filter change
-  const handleGenderChange = (gender: string) => {
-    setFilters((prev) => {
-      const newGenders = prev.gender.includes(gender) ? prev.gender.filter((g) => g !== gender) : [...prev.gender, gender];
-      return { ...prev, gender: newGenders };
+  const handleGenderChange = (gender: Gender) => {
+    setGenderFilter(prev => {
+      if (prev.includes(gender)) {
+        return prev.filter(g => g !== gender);
+      } else {
+        return [...prev, gender];
+      }
     });
   };
 
-  // Handle age range filter change
-  const handleAgeRangeChange = (value: number[]) => {
-    setFilters((prev) => ({ ...prev, ageRange: [value[0], value[1]] }));
-  };
+  // Apply gender filter
+  useEffect(() => {
+    if (genderFilter.length > 0) {
+      setFilters(prev => ({
+        ...prev,
+        gender: genderFilter.join(','),
+        page: 1
+      }));
+    } else {
+      setFilters(prev => {
+        const { gender, ...rest } = prev;
+        return { ...rest, page: 1 };
+      });
+    }
+    
+    // Update filter count
+    setActiveFilterCount(genderFilter.length > 0 ? 1 : 0);
+  }, [genderFilter, setFilters]);
 
-  // Handle condition filter change
-  const handleConditionChange = (condition: string) => {
-    setFilters((prev) => {
-      const newConditions = prev.conditions.includes(condition) ? prev.conditions.filter((c) => c !== condition) : [...prev.conditions, condition];
-      return { ...prev, conditions: newConditions };
-    });
-  };
-
-  // Handle doctor filter change
-  const handleDoctorChange = (doctor: string) => {
-    setFilters((prev) => {
-      const newDoctors = prev.doctors.includes(doctor) ? prev.doctors.filter((d) => d !== doctor) : [...prev.doctors, doctor];
-      return { ...prev, doctors: newDoctors };
-    });
-  };
-
-  // Reset all filters
+  // Reset filters
   const resetFilters = () => {
+    setSearchTerm("");
+    setGenderFilter([]);
     setFilters({
-      search: "",
-      status: "all",
-      gender: [],
-      ageRange: [0, 100],
-      conditions: [],
-      doctors: [],
+      page: 1,
+      limit: 10,
     });
   };
 
-  const { patients, loading } = usePatientContext();
+  // Confirm delete dialog
+  const confirmDelete = (patientId: string) => {
+    setPatientToDelete(patientId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  // Handle delete patient
+  const handleDeletePatient = async () => {
+    if (!patientToDelete) return;
+
+    try {
+      await deletePatient(patientToDelete);
+      toast({
+        title: "Success",
+        description: "Patient deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete patient",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+      setPatientToDelete(null);
+    }
+  };
+
+  // Calculate age from date of birth
+  const calculateAge = (dateOfBirth: string | null): number => {
+    if (!dateOfBirth) return 0;
+
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  };
+
+  // Format date to readable format
+  const formatDate = (dateString: string): string => {
+    try {
+      return format(new Date(dateString), 'MMM dd, yyyy');
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
+  // Get initials from name
+  const getInitials = (firstName: string, lastName: string): string => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`;
+  };
 
   return (
     <>
@@ -309,10 +208,16 @@ export default function PatientsPage() {
                 <CardTitle>Patients List</CardTitle>
                 <CardDescription>A list of all patients in your clinic with their details.</CardDescription>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <div className="relative">
+              <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <div className="relative w-full md:w-auto">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input type="search" placeholder="Search patients..." className="pl-8 w-full md:w-[250px]" value={filters.search} onChange={handleSearchChange} />
+                  <Input
+                    type="search"
+                    placeholder="Search patients..."
+                    className="pl-8 w-full md:w-[250px]"
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                  />
                 </div>
 
                 <Popover>
@@ -320,7 +225,11 @@ export default function PatientsPage() {
                     <Button variant="outline" className="relative">
                       <Filter className="h-4 w-4 mr-2" />
                       Filters
-                      {activeFilterCount > 0 && <Badge className="ml-2 bg-primary text-primary-foreground">{activeFilterCount}</Badge>}
+                      {activeFilterCount > 0 && (
+                        <Badge className="ml-2 bg-primary text-primary-foreground">
+                          {activeFilterCount}
+                        </Badge>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[300px] md:w-[400px]" align="end">
@@ -334,68 +243,32 @@ export default function PatientsPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label>Status</Label>
-                        <Select value={filters.status} onValueChange={handleStatusChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
                         <Label>Gender</Label>
                         <div className="flex flex-col gap-2">
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="male" checked={filters.gender.includes("Male")} onCheckedChange={() => handleGenderChange("Male")} />
+                            <Checkbox
+                              id="male"
+                              checked={genderFilter.includes(Gender.MALE)}
+                              onCheckedChange={() => handleGenderChange(Gender.MALE)}
+                            />
                             <label htmlFor="male">Male</label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <Checkbox id="female" checked={filters.gender.includes("Female")} onCheckedChange={() => handleGenderChange("Female")} />
+                            <Checkbox
+                              id="female"
+                              checked={genderFilter.includes(Gender.FEMALE)}
+                              onCheckedChange={() => handleGenderChange(Gender.FEMALE)}
+                            />
                             <label htmlFor="female">Female</label>
                           </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label>Age Range</Label>
-                          <span className="text-sm text-muted-foreground">
-                            {filters.ageRange[0]} - {filters.ageRange[1]} years
-                          </span>
-                        </div>
-                        <Slider defaultValue={[0, 100]} min={0} max={100} step={1} value={[filters.ageRange[0], filters.ageRange[1]]} onValueChange={handleAgeRangeChange} className="py-4" />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Conditions</Label>
-                        <div className="max-h-[150px] overflow-y-auto space-y-2 pr-2">
-                          {uniqueConditions.map((condition) => (
-                            <div key={condition} className="flex items-center space-x-2">
-                              <Checkbox id={`condition-${condition}`} checked={filters.conditions.includes(condition)} onCheckedChange={() => handleConditionChange(condition)} />
-                              <label htmlFor={`condition-${condition}`} className="text-sm">
-                                {condition}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label>Doctors</Label>
-                        <div className="max-h-[150px] overflow-y-auto space-y-2 pr-2">
-                          {uniqueDoctors.map((doctor) => (
-                            <div key={doctor} className="flex items-center space-x-2">
-                              <Checkbox id={`doctor-${doctor}`} checked={filters.doctors.includes(doctor)} onCheckedChange={() => handleDoctorChange(doctor)} />
-                              <label htmlFor={`doctor-${doctor}`} className="text-sm">
-                                {doctor}
-                              </label>
-                            </div>
-                          ))}
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="other"
+                              checked={genderFilter.includes(Gender.OTHER)}
+                              onCheckedChange={() => handleGenderChange(Gender.OTHER)}
+                            />
+                            <label htmlFor="other">Other</label>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -412,60 +285,30 @@ export default function PatientsPage() {
             {/* Active filters display */}
             {activeFilterCount > 0 && (
               <div className="flex flex-wrap gap-2">
-                {filters.status !== "all" && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Status: {filters.status}
-                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => handleStatusChange("all")}>
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove status filter</span>
-                    </Button>
-                  </Badge>
-                )}
-
-                {filters.gender.map((gender) => (
+                {genderFilter.map((gender) => (
                   <Badge key={gender} variant="secondary" className="flex items-center gap-1">
                     {gender}
-                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => handleGenderChange(gender)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0 ml-1"
+                      onClick={() => handleGenderChange(gender)}
+                    >
                       <X className="h-3 w-3" />
                       <span className="sr-only">Remove {gender} filter</span>
                     </Button>
                   </Badge>
                 ))}
 
-                {(filters.ageRange[0] > 0 || filters.ageRange[1] < 100) && (
+                {searchTerm && (
                   <Badge variant="secondary" className="flex items-center gap-1">
-                    Age: {filters.ageRange[0]}-{filters.ageRange[1]}
-                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => handleAgeRangeChange([0, 100])}>
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Reset age range</span>
-                    </Button>
-                  </Badge>
-                )}
-
-                {filters.conditions.map((condition) => (
-                  <Badge key={condition} variant="secondary" className="flex items-center gap-1">
-                    {condition}
-                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => handleConditionChange(condition)}>
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove {condition} filter</span>
-                    </Button>
-                  </Badge>
-                ))}
-
-                {filters.doctors.map((doctor) => (
-                  <Badge key={doctor} variant="secondary" className="flex items-center gap-1">
-                    {doctor.replace("Dr. ", "")}
-                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => handleDoctorChange(doctor)}>
-                      <X className="h-3 w-3" />
-                      <span className="sr-only">Remove {doctor} filter</span>
-                    </Button>
-                  </Badge>
-                ))}
-
-                {filters.search && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Search: {filters.search}
-                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setFilters((prev) => ({ ...prev, search: "" }))}>
+                    Search: {searchTerm}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 p-0 ml-1"
+                      onClick={() => setSearchTerm("")}
+                    >
                       <X className="h-3 w-3" />
                       <span className="sr-only">Clear search</span>
                     </Button>
@@ -478,90 +321,205 @@ export default function PatientsPage() {
               </div>
             )}
           </CardHeader>
+
           <CardContent>
-            {filteredPatients.length === 0 ? (
+            {loading.table ? (
+              <div className="space-y-3">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+            ) : patients.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="rounded-full bg-muted p-3 mb-3">
                   <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
-                <h3 className="text-lg font-semibold">No patients found</h3>
-                <p className="text-muted-foreground mt-1 mb-4 max-w-md">No patients match your current filters. Try adjusting your search or filter criteria.</p>
-                <Button variant="outline" onClick={resetFilters}>
-                  Reset all filters
-                </Button>
+                <h3 className="text-lg font-semibold mb-1">No patients found</h3>
+                <p className="text-muted-foreground mb-4">
+                  {searchTerm
+                    ? "Try adjusting your search or filters to find what you're looking for."
+                    : "Get started by adding your first patient."}
+                </p>
+                {!searchTerm && (
+                  <Button asChild>
+                    <Link href="/patients/add">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Patient
+                    </Link>
+                  </Button>
+                )}
               </div>
             ) : (
-              <Table className="whitespace-nowrap">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Numero Patient</TableHead>
-                    <TableHead className="table-cell">First Name</TableHead>
-                    <TableHead className="table-cell">Last Name</TableHead>
-                    <TableHead className="table-cell">Phone</TableHead>
-                    <TableHead className="table-cell">Address</TableHead>
-                    <TableHead className="table-cell">Date of Birth</TableHead>
-                    <TableHead className="table-cell">Emergency Contact</TableHead>
-                    <TableHead className="table-cell">Kinesitherapeute</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {patients.map((patient) => (
-                    <TableRow key={patient.id}>
-                      <TableCell>{patient.numeroPatient}</TableCell>
-                      <TableCell className="table-cell">{patient.firstName}</TableCell>
-                      <TableCell className="table-cell">{patient.lastName}</TableCell>
-                      <TableCell className="table-cell">{patient.telephone}</TableCell>
-                      <TableCell className="table-cell">{patient.adresse}</TableCell>
-                      <TableCell className="table-cell">{patient.dateNaissance ?? "N/A"}</TableCell>
-                      <TableCell className="table-cell">{patient.contactUrgence}</TableCell>
-                      <TableCell className="table-cell">{patient.kinesitherapeute ? `${patient.kinesitherapeute.firstName} ${patient.kinesitherapeute.lastName}` : "N/A"}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/patients/${patient.id}`}>View profile</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/patients/${patient.id}/edit`}>Edit details</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/patients/${patient.id}/history`}>Medical history</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/patients/${patient.id}/prescriptions`}>Prescriptions</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)} className="text-red-600">
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <>
+                <div className="relative w-full overflow-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[30px]">
+                          <Checkbox
+                            checked={selectedPatients.length === patients.length && patients.length > 0}
+                            onCheckedChange={handleSelectAll}
+                          />
+                        </TableHead>
+                        <TableHead className="w-[250px]">Patient</TableHead>
+                        <TableHead className="hidden md:table-cell">Age / Gender</TableHead>
+                        <TableHead className="hidden md:table-cell">Contact</TableHead>
+                        <TableHead className="hidden lg:table-cell">Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {patients.map((patient) => (
+                        <TableRow key={patient.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedPatients.includes(patient.id)}
+                              onCheckedChange={(checked) =>
+                                handlePatientSelection(patient.id, !!checked)
+                              }
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar>
+                                <AvatarImage
+                                  src={patient.profilePhotoUrl || ""}
+                                  alt={`${patient.firstName} ${patient.lastName}`}
+                                />
+                                <AvatarFallback>
+                                  {getInitials(patient.firstName, patient.lastName)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex flex-col">
+                                <Link
+                                  href={`/patients/${patient.id}`}
+                                  className="font-medium hover:underline"
+                                >
+                                  {`${patient.firstName} ${patient.lastName}`}
+                                </Link>
+                                <span className="text-xs text-muted-foreground md:hidden">
+                                  {patient.email}
+                                </span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            <div className="flex flex-col">
+                              <span>{calculateAge(patient.dateOfBirth)} years</span>
+                              <span className="text-xs text-muted-foreground">{patient.gender}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden md:table-cell">
+                            <div className="flex flex-col">
+                              <span>{patient.email}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {patient.phoneNumber}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="hidden lg:table-cell">
+                            <Badge
+                              variant={patient.active ? "default" : "secondary"}
+                              className={patient.active ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
+                            >
+                              {patient.active ? "Active" : "Inactive"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Actions</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/patients/${patient.id}`}>View Details</Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <Link href={`/patients/${patient.id}/edit`}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Edit
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={() => confirmDelete(patient.id)}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Pagination */}
+                {pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-between space-x-2 py-4">
+                    <div className="text-sm text-muted-foreground">
+                      Showing{" "}
+                      <span className="font-medium">
+                        {(pagination.page - 1) * pagination.limit + 1}
+                      </span>{" "}
+                      to{" "}
+                      <span className="font-medium">
+                        {Math.min(pagination.page * pagination.limit, pagination.total)}
+                      </span>{" "}
+                      of <span className="font-medium">{pagination.total}</span> results
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={pagination.page === 1}
+                      >
+                        Previous
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={pagination.page === pagination.totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
       </div>
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to Delete this patient?</AlertDialogTitle>
-            <AlertDialogDescription>This action cannot be undone. The patient's data will be permanently removed.</AlertDialogDescription>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the patient record and all associated data. This action
+              cannot be undone.
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setDeleteDialogOpen(false)} className="bg-red-500 text-neutral-50 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={handleDeletePatient}
+              className="bg-destructive hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

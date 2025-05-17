@@ -129,7 +129,7 @@ export class Patient {
     (emergencyContact) => emergencyContact.patient,
     { cascade: true },
   )
-  emergencyContacts: EmergencyContact[];
+  emergencyContact: EmergencyContact;
 
   @OneToMany(
     () => ConsentDocument,

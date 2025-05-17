@@ -156,9 +156,9 @@ export class CreatePatientDto {
   @IsString()
   kinesitherapeuteId?: string;
 
-  @ApiProperty({ type: [CreateEmergencyContactDto], required: false })
+  @ApiProperty({ type: CreateEmergencyContactDto, required: false })
   @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => CreateEmergencyContactDto)
-  emergencyContacts?: CreateEmergencyContactDto[];
+  emergencyContact?: CreateEmergencyContactDto;
 }

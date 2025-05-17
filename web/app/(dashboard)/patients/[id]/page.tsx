@@ -8,34 +8,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, Clock, Download, Edit, FileText, MoreHorizontal, Pill, Plus, Printer, Receipt, User } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { usePatientDetails } from "@/hooks/usePatients";
+import { ArrowLeft, Calendar, Clock, Download, Edit, FileText, Loader2, MoreHorizontal, Pill, Plus, Printer, Receipt, User } from "lucide-react";
+import { format, parseISO, differenceInYears } from "date-fns";
 import Link from "next/link";
-import { useState } from "react";
-
-// Sample patient data
-const patient = {
-  id: "P12345",
-  name: "John Smith",
-  image: "/colorful-abstract-shapes.png",
-  age: 45,
-  gender: "Male",
-  dob: "1978-05-15",
-  phone: "+1 (555) 123-4567",
-  email: "john.smith@example.com",
-  address: "123 Main Street, Apt 4B, New York, NY 10001",
-  bloodType: "O+",
-  allergies: ["Penicillin", "Peanuts"],
-  conditions: ["Hypertension", "Type 2 Diabetes"],
-  primaryDoctor: "Dr. Sarah Johnson",
-  insuranceProvider: "Blue Cross Blue Shield",
-  policyNumber: "BCBS123456789",
-  emergencyContact: {
-    name: "Mary Smith",
-    relationship: "Wife",
-    phone: "+1 (555) 987-6543",
-  },
-  registrationDate: "2020-03-10",
-};
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Sample appointments data
 const appointments = [
@@ -266,8 +245,76 @@ const billingHistory = [
   },
 ];
 
-export default function PatientDetailsPage() {
+export default function PatientDetailsPage({ params }: { params: { id: string } }) {
+  const patientId = params.id;
+  const { toast } = useToast();
+  const router = useRouter();
+  const { getPatient, selectedPatient, loading, error, setSelectedPatient } = usePatientDetails();
   const [activeTab, setActiveTab] = useState("overview");
+  
+  useEffect(() => {
+    const fetchPatient = async () => {
+      try {
+        await getPatient(patientId);
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to fetch patient details",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    fetchPatient();
+    
+    return () => {
+      // Cleanup function to set selectedPatient to null when component unmounts
+      setSelectedPatient(null);
+    };
+  }, [patientId]);
+  
+  // Calculate age if date of birth is available
+  const getAge = (dob: string | null) => {
+    if (!dob) return 'N/A';
+    return differenceInYears(new Date(), parseISO(dob));
+  };
+  
+  // Get patient initials for avatar fallback
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+  };
+  
+  if (loading.form) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  if (!selectedPatient) {
+    return (
+      <div className="flex flex-col gap-5">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="icon" asChild>
+            <Link href="/patients">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
+            </Link>
+          </Button>
+          <h1 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">Patient Not Found</h1>
+        </div>
+        <Card>
+          <CardContent className="py-10 text-center">
+            <p>The requested patient could not be found or you don't have permission to view it.</p>
+            <Button className="mt-4" onClick={() => router.push('/patients')}>
+              Back to Patients List
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -299,9 +346,11 @@ export default function PatientDetailsPage() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                  <DropdownMenuItem>
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Patient
+                  <DropdownMenuItem asChild>
+                    <Link href={`/patients/${selectedPatient.id}/edit`}>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit Patient
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Printer className="mr-2 h-4 w-4" />
@@ -316,23 +365,27 @@ export default function PatientDetailsPage() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <CardDescription>Patient ID: {patient.id}</CardDescription>
+            <CardDescription>Patient ID: {selectedPatient.id}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center text-center">
               <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src={patient.image || "/user-2.png"} alt={patient.name} />
-                <AvatarFallback>{patient.name.charAt(0)}</AvatarFallback>
+                <AvatarImage src={selectedPatient.profilePhotoUrl || "/user-2.png"} alt={`${selectedPatient.firstName} ${selectedPatient.lastName}`} />
+                <AvatarFallback>{getInitials(selectedPatient.firstName, selectedPatient.lastName)}</AvatarFallback>
               </Avatar>
-              <h2 className="text-xl font-bold">{patient.name}</h2>
+              <h2 className="text-xl font-bold">{selectedPatient.firstName} {selectedPatient.middleName ? `${selectedPatient.middleName} ` : ''}{selectedPatient.lastName}</h2>
               <p className="text-muted-foreground">
-                {patient.age} years • {patient.gender}
+                {selectedPatient.dateOfBirth ? `${getAge(selectedPatient.dateOfBirth)} years • ` : ''}{selectedPatient.gender}
               </p>
               <div className="flex items-center gap-2 mt-2">
-                <Badge className="bg-green-500">Active</Badge>
-                <Badge variant="outline" className="border-blue-500 text-blue-500">
-                  {patient.bloodType}
+                <Badge className={selectedPatient.active ? "bg-green-500" : "bg-red-500"}>
+                  {selectedPatient.active ? "Active" : "Inactive"}
                 </Badge>
+                {selectedPatient.medicalRecord?.bloodType && (
+                  <Badge variant="outline" className="border-blue-500 text-blue-500">
+                    {selectedPatient.medicalRecord.bloodType.replace('_', '')}
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -343,51 +396,64 @@ export default function PatientDetailsPage() {
                 <User className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
                 <div className="space-y-1.5">
                   <h3 className="font-medium mb-3">Personal Information</h3>
-                  <p className="text-sm">Date of Birth: {patient.dob}</p>
-                  <p className="text-sm">Phone: {patient.phone}</p>
-                  <p className="text-sm">Email: {patient.email}</p>
-                  <p className="text-sm">Address: {patient.address}</p>
+                  {selectedPatient.dateOfBirth && <p className="text-sm">Date of Birth: {format(parseISO(selectedPatient.dateOfBirth), 'PPP')}</p>}
+                  <p className="text-sm">Phone: {selectedPatient.phoneNumber}</p>
+                  {selectedPatient.alternativePhoneNumber && <p className="text-sm">Alternative Phone: {selectedPatient.alternativePhoneNumber}</p>}
+                  <p className="text-sm">Email: {selectedPatient.email}</p>
+                  {selectedPatient.address && <p className="text-sm">Address: {selectedPatient.address}{selectedPatient.city ? `, ${selectedPatient.city}` : ''}{selectedPatient.state ? `, ${selectedPatient.state}` : ''}{selectedPatient.zipCode ? ` ${selectedPatient.zipCode}` : ''}</p>}
                 </div>
               </div>
 
-              <div className="flex items-start gap-3">
-                <FileText className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
-                <div>
-                  <h3 className="font-medium mb-3">Medical Information</h3>
-                  <div className="text-sm space-y-1.5">
-                    <p>Blood Type: {patient.bloodType}</p>
-                    <p>Allergies: {patient.allergies.join(", ")}</p>
-                    <p>Conditions: {patient.conditions.join(", ")}</p>
-                    <p>Primary Doctor: {patient.primaryDoctor}</p>
+              {selectedPatient.medicalRecord && (
+                <div className="flex items-start gap-3">
+                  <FileText className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <h3 className="font-medium mb-3">Medical Information</h3>
+                    <div className="text-sm space-y-1.5">
+                      {selectedPatient.medicalRecord.bloodType && <p>Blood Type: {selectedPatient.medicalRecord.bloodType.replace('_', '')}</p>}
+                      {selectedPatient.medicalRecord.height && <p>Height: {selectedPatient.medicalRecord.height} cm</p>}
+                      {selectedPatient.medicalRecord.weight && <p>Weight: {selectedPatient.medicalRecord.weight} kg</p>}
+                      {selectedPatient.medicalRecord.allergies && <p>Allergies: {selectedPatient.medicalRecord.allergies}</p>}
+                      {selectedPatient.medicalRecord.chronicConditions && <p>Conditions: {selectedPatient.medicalRecord.chronicConditions}</p>}
+                      {selectedPatient.medicalRecord.currentMedications && <p>Current Medications: {selectedPatient.medicalRecord.currentMedications}</p>}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              <div className="flex items-start gap-3">
-                <Receipt className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="space-y-1.5">
-                  <h3 className="font-medium mb-3">Insurance Information</h3>
-                  <p className="text-sm">Provider: {patient.insuranceProvider}</p>
-                  <p className="text-sm">Policy Number: {patient.policyNumber}</p>
+              {selectedPatient.insuranceInfo && (
+                <div className="flex items-start gap-3">
+                  <Receipt className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="space-y-1.5">
+                    <h3 className="font-medium mb-3">Insurance Information</h3>
+                    <p className="text-sm">Provider: {selectedPatient.insuranceInfo.provider}</p>
+                    <p className="text-sm">Policy Number: {selectedPatient.insuranceInfo.policyNumber}</p>
+                    {selectedPatient.insuranceInfo.groupNumber && <p className="text-sm">Group Number: {selectedPatient.insuranceInfo.groupNumber}</p>}
+                    <p className="text-sm">Primary Insured: {selectedPatient.insuranceInfo.primaryInsuredName}</p>
+                    {selectedPatient.insuranceInfo.validUntil && <p className="text-sm">Valid Until: {format(parseISO(selectedPatient.insuranceInfo.validUntil), 'PPP')}</p>}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div className="flex items-start gap-3">
-                <User className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
-                <div className="space-y-1.5">
-                  <h3 className="font-medium mb-3">Emergency Contact</h3>
-                  <p className="text-sm">Name: {patient.emergencyContact.name}</p>
-                  <p className="text-sm">Relationship: {patient.emergencyContact.relationship}</p>
-                  <p className="text-sm">Phone: {patient.emergencyContact.phone}</p>
+              {selectedPatient.emergencyContacts && selectedPatient.emergencyContacts.length > 0 && (
+                <div className="flex items-start gap-3">
+                  <User className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="space-y-1.5">
+                    <h3 className="font-medium mb-3">Emergency Contact</h3>
+                    <p className="text-sm">Name: {selectedPatient.emergencyContacts[0].name}</p>
+                    {selectedPatient.emergencyContacts[0].relationship && <p className="text-sm">Relationship: {selectedPatient.emergencyContacts[0].relationship}</p>}
+                    <p className="text-sm">Phone: {selectedPatient.emergencyContacts[0].phoneNumber}</p>
+                    {selectedPatient.emergencyContacts[0].email && <p className="text-sm">Email: {selectedPatient.emergencyContacts[0].email}</p>}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             <Separator />
 
             <div className="flex justify-between text-sm text-muted-foreground">
-              <span>Registered on: {patient.registrationDate}</span>
-              <span>Last Updated: 2024-03-15</span>
+              <span>Registered: {format(parseISO(selectedPatient.createdAt), 'PPP')}</span>
+              <span>Updated: {format(parseISO(selectedPatient.updatedAt), 'PPP')}</span>
             </div>
           </CardContent>
         </Card>

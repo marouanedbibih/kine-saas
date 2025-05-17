@@ -38,7 +38,7 @@ export class PatientService {
     createPatientDto: CreatePatientDto,
     currentUser: User,
   ): Promise<Patient> {
-    const { emergencyContacts, ...patientData } = createPatientDto;
+    const { emergencyContact, ...patientData } = createPatientDto;
     const patient = this.patientRepository.create({
       ...patientData,
       kinesitherapeute: currentUser, // set the relation
@@ -46,16 +46,12 @@ export class PatientService {
 
     const savedPatient = await this.patientRepository.save(patient);
 
-    // Save emergency contacts if provided
-    if (emergencyContacts && emergencyContacts.length > 0) {
-      const contacts = emergencyContacts.map((contact) =>
-        this.emergencyContactRepository.create({
-          ...contact,
-          patient: savedPatient,
-        }),
-      );
-      await this.emergencyContactRepository.save(contacts);
-      savedPatient.emergencyContacts = contacts;
+    if (emergencyContact) {
+      const emergencyContactEntity = this.emergencyContactRepository.create({
+        ...emergencyContact,
+        patient: savedPatient, // set the relation
+      });
+      await this.emergencyContactRepository.save(emergencyContactEntity);
     }
 
     return savedPatient;
@@ -150,10 +146,10 @@ export class PatientService {
     //   );
     // }
 
-    if (updatePatientDto.emergencyContacts) {
-      // Handle emergency contacts updates...
-      // This would typically involve more complex logic to add/update/remove contacts
-    }
+    // if (updatePatientDto.emergencyContacts) {
+    //   // Handle emergency contacts updates...
+    //   // This would typically involve more complex logic to add/update/remove contacts
+    // }
 
     return this.patientRepository.save(patient);
   }

@@ -1086,11 +1086,8 @@
           "kinesitherapeuteId": {
             "type": "string"
           },
-          "emergencyContacts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateEmergencyContactDto"
-            }
+          "emergencyContact": {
+            "$ref": "#/components/schemas/CreateEmergencyContactDto"
           }
         },
         "required": [
@@ -1324,11 +1321,8 @@
           "kinesitherapeuteId": {
             "type": "string"
           },
-          "emergencyContacts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/CreateEmergencyContactDto"
-            }
+          "emergencyContact": {
+            "$ref": "#/components/schemas/CreateEmergencyContactDto"
           }
         }
       }
