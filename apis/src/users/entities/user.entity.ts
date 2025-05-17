@@ -5,12 +5,13 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Patient } from '@/modules/patient/patient.entity';
 
 export enum UserRole {
   KINESITHERAPEUTE = 'KINESITHERAPEUTE',
-  ASSISTANT = 'ASSISTANT',
   ADMIN = 'ADMIN',
 }
 
@@ -43,4 +44,10 @@ export class User {
 
   @UpdateDateColumn()
   dateModification: Date;
+
+  @OneToMany(() => Patient, (patient) => patient.kinesitherapeute, {
+    cascade: true,
+    onDelete: 'SET NULL',
+  })
+  patients: Patient[];
 }

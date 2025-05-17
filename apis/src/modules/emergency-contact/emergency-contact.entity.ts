@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Patient } from '../patient/patient.entity';
 
@@ -19,6 +18,8 @@ export class EmergencyContact {
   @Column({ nullable: true })
   email: string;
 
-  @ManyToOne(() => Patient, (patient) => patient.emergencyContacts)
+  @ManyToOne(() => Patient, (patient) => patient.emergencyContacts, {
+    onDelete: 'SET NULL',
+  })
   patient: Patient;
 }

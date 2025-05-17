@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
+
 // src/modules/patient/entities/patient.entity.ts
 import { ConsentDocument } from '../documents/consent-document.entity';
 import { EmergencyContact } from '../emergency-contact/emergency-contact.entity';
@@ -17,17 +17,46 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { MedicalRecord } from '../medical-record/medical-record.entity';
+import { User } from '@/users/entities/user.entity';
+
+// Gender enum for patient
+export enum Gender {
+  MALE = 'male',
+  FEMALE = 'female',
+  OTHER = 'other',
+  PREFER_NOT_TO_SAY = 'prefer-not-to-say',
+}
+
+// Marital status enum for patient
+export enum MaritalStatus {
+  SINGLE = 'single',
+  MARRIED = 'married',
+  DIVORCED = 'divorced',
+  WIDOWED = 'widowed',
+  SEPARATED = 'separated',
+}
+
+// Preferred contact method enum
+export enum PreferredContact {
+  PHONE = 'phone',
+  EMAIL = 'email',
+  SMS = 'sms',
+}
 
 @Entity('patients')
 export class Patient {
   push(patient: Patient) {
     throw new Error('Method not implemented.');
   }
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   firstName: string;
+
+  @Column({ nullable: true })
+  middleName: string;
 
   @Column()
   lastName: string;
@@ -36,25 +65,55 @@ export class Patient {
   email: string;
 
   @Column()
+  phoneNumber: string;
+  @Column()
   dateOfBirth: Date;
 
-  @Column()
-  gender: string;
+  @Column({
+    type: 'enum',
+    enum: Gender,
+    default: Gender.PREFER_NOT_TO_SAY,
+  })
+  gender: Gender;
+
+  @Column({
+    type: 'enum',
+    enum: MaritalStatus,
+    nullable: true,
+  })
+  maritalStatus: MaritalStatus;
 
   @Column({ nullable: true })
-  phoneNumber: string;
+  alternativePhoneNumber: string;
+
+  @Column({
+    type: 'enum',
+    enum: PreferredContact,
+    nullable: true,
+  })
+  preferredContact: PreferredContact;
 
   @Column({ nullable: true })
   address: string;
 
   @Column({ nullable: true })
+  city: string;
+
+  @Column({ nullable: true })
+  state: string;
+
+  @Column({ nullable: true })
+  zipCode: string;
+
+  @Column({ nullable: true })
   profilePhotoUrl: string;
 
-  @Column()
-  createdByUserId: string; // ID of kinesitherapist who created patient
-  @ManyToOne(() => Kinesitherapeute, (kine) => kine.patients)
+  @ManyToOne(() => User, (user) => user.patients, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   @JoinColumn({ name: 'kinesitherapeute_id' })
-  kinesitherapeute: Kinesitherapeute;
+  kinesitherapeute: User;
 
   @OneToOne(() => MedicalRecord, (medicalRecord) => medicalRecord.patient, {
     cascade: true,
