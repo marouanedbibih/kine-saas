@@ -4,7 +4,6 @@
 import { ConsentDocument } from '../documents/consent-document.entity';
 import { EmergencyContact } from '../emergency-contact/emergency-contact.entity';
 import { InsuranceInfo } from '../insurance-info/insurance-info.entity';
-import { Kinesitherapeute } from 'src/kinesitherapeute/entities/kinesitherapeute.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -17,7 +16,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { MedicalRecord } from '../medical-record/medical-record.entity';
-import { User } from '@/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 
 // Gender enum for patient
 export enum Gender {

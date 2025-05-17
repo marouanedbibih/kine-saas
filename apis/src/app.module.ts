@@ -12,12 +12,12 @@ import { AuthModule } from './auth/auth.module';
 // Guards
 import { RolesGuard } from './common/guards/roles.guard';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
-import { UsersModule } from './users/users.module';
 import { PatientModule } from './modules/patient/patient.module';
 import { EmergencyContactModule } from './modules/emergency-contact/emergency-contact.module';
-import { DocumentsModule } from './modules/documents/documents.module';
+// import { DocumentsModule } from './modules/documents/documents.module';
 import { InsuranceInfoModule } from './modules/insurance-info/insurance-info.module';
 import { MedicalRecordModule } from './modules/medical-record/medical-record.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -47,7 +47,7 @@ import { MedicalRecordModule } from './modules/medical-record/medical-record.mod
     UsersModule,
     PatientModule,
     EmergencyContactModule,
-    DocumentsModule,
+    // DocumentsModule,
     InsuranceInfoModule,
     MedicalRecordModule,
   ],

@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { AppDataSource } from '../data-source';
 import { UserSeeder } from './user.seeder';
-import { KinesitherapeuteSeeder } from './kinesitherapeute.seeder';
+// import { KinesitherapeuteSeeder } from './kinesitherapeute.seeder';
 import { PatientSeeder } from './patient.seeder';
 
 export class Seeder {
@@ -30,7 +30,7 @@ export class Seeder {
           console.log('🧹 Cleaning database...');
           await new PatientSeeder(entityManager).clean();
           console.log('✅ Patients cleaned');
-          await new KinesitherapeuteSeeder(entityManager).clean();
+          // await new KinesitherapeuteSeeder(entityManager).clean();
           console.log('✅ Kinesitherapeutes cleaned');
           await new UserSeeder(entityManager).clean();
           console.log('✅ Users cleaned');
@@ -45,10 +45,10 @@ export class Seeder {
           console.log(`✅ ${userSeeder.getName()} completed`);
 
           // 2. Seed kinesitherapeutes
-          const kineSeeder = new KinesitherapeuteSeeder(entityManager);
-          console.log(`🔄 Running ${kineSeeder.getName()}...`);
-          await kineSeeder.execute();
-          console.log(`✅ ${kineSeeder.getName()} completed`);
+          // const kineSeeder = new KinesitherapeuteSeeder(entityManager);
+          // console.log(`🔄 Running ${kineSeeder.getName()}...`);
+          // await kineSeeder.execute();
+          // console.log(`✅ ${kineSeeder.getName()} completed`);
 
           // 3. Seed patients
           const patientSeeder = new PatientSeeder(entityManager);

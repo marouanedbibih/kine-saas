@@ -1,8 +1,8 @@
 import { EntityManager } from 'typeorm';
 import { BaseSeeder } from './base.seeder';
 import { faker } from '@faker-js/faker';
-import { User, UserRole } from '../../users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { User, UserRole } from '@/modules/users/entities/user.entity';
 
 export class UserSeeder extends BaseSeeder {
   protected static readonly entityClass = User;

@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Kinesitherapeute } from '@/kinesitherapeute/entities/kinesitherapeute.entity';
 import { ConsentDocument } from '@/modules/documents/consent-document.entity';
 import { EmergencyContact } from '@/modules/emergency-contact/emergency-contact.entity';
 import { InsuranceInfo } from '@/modules/insurance-info/insurance-info.entity';
 import { MedicalRecord } from '@/modules/medical-record/medical-record.entity';
 import { Patient } from '@/modules/patient/patient.entity';
-import { User } from '@/users/entities/user.entity';
+import { User } from '@/modules/users/entities/user.entity';
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
@@ -32,10 +31,11 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
       EmergencyContact,
       InsuranceInfo,
       MedicalRecord,
-      Kinesitherapeute,
+      // Kinesitherapeute,
     ],
     migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
     synchronize: true,
+    dropSchema: true,
     logging:
       process.env.DB_LOGGING === 'true' ||
       process.env.NODE_ENV === 'development',

@@ -3,6 +3,7 @@ import {
   IsOptional,
   IsString,
   IsDateString,
+  IsPhoneNumber,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -41,4 +42,24 @@ export class CreateInsuranceInfoDto {
   @IsOptional()
   @IsDateString()
   validUntil?: string;
+  
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsPhoneNumber()
+  insurancePhone?: string;
+  
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  secondaryProvider?: string;
+  
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  secondaryPolicyNumber?: string;
+  
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  secondaryGroupNumber?: string;
 }

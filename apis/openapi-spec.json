@@ -232,7 +232,6 @@
               "type": "string",
               "enum": [
                 "KINESITHERAPEUTE",
-                "ASSISTANT",
                 "ADMIN"
               ]
             }
@@ -724,101 +723,6 @@
           "patients"
         ]
       }
-    },
-    "/patients/{patientId}/documents": {
-      "post": {
-        "operationId": "DocumentController_uploadDocument",
-        "parameters": [
-          {
-            "name": "patientId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateDocumentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Document uploaded successfully"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Upload a document for a patient",
-        "tags": [
-          "documents"
-        ]
-      },
-      "get": {
-        "operationId": "DocumentController_getPatientDocuments",
-        "parameters": [
-          {
-            "name": "patientId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Return all patient documents"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all documents for a patient",
-        "tags": [
-          "documents"
-        ]
-      }
-    },
-    "/patients/{patientId}/documents/{id}": {
-      "delete": {
-        "operationId": "DocumentController_removeDocument",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Document deleted successfully"
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete a document",
-        "tags": [
-          "documents"
-        ]
-      }
     }
   },
   "info": {
@@ -1020,7 +924,6 @@
             "type": "string",
             "enum": [
               "KINESITHERAPEUTE",
-              "ASSISTANT",
               "ADMIN"
             ],
             "example": "KINESITHERAPEUTE",
@@ -1071,58 +974,31 @@
           "newPassword"
         ]
       },
-      "CreateMedicalRecordDto": {
-        "type": "object",
-        "properties": {
-          "medicalHistory": {
-            "type": "string"
-          },
-          "allergies": {
-            "type": "string"
-          },
-          "currentMedications": {
-            "type": "string"
-          },
-          "previousTreatments": {
-            "type": "string"
-          },
-          "diagnosisNotes": {
-            "type": "string"
-          },
-          "treatmentPlan": {
-            "type": "string"
-          }
-        }
+      "Gender": {
+        "type": "string",
+        "enum": [
+          "male",
+          "female",
+          "other",
+          "prefer-not-to-say"
+        ]
       },
-      "CreateInsuranceInfoDto": {
-        "type": "object",
-        "properties": {
-          "provider": {
-            "type": "string"
-          },
-          "policyNumber": {
-            "type": "string"
-          },
-          "groupNumber": {
-            "type": "string"
-          },
-          "primaryInsuredName": {
-            "type": "string"
-          },
-          "relationship": {
-            "type": "string"
-          },
-          "coverageDetails": {
-            "type": "string"
-          },
-          "validUntil": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "provider",
-          "policyNumber",
-          "primaryInsuredName"
+      "MaritalStatus": {
+        "type": "string",
+        "enum": [
+          "single",
+          "married",
+          "divorced",
+          "widowed",
+          "separated"
+        ]
+      },
+      "PreferredContact": {
+        "type": "string",
+        "enum": [
+          "phone",
+          "email",
+          "sms"
         ]
       },
       "CreateEmergencyContactDto": {
@@ -1153,6 +1029,9 @@
           "firstName": {
             "type": "string"
           },
+          "middleName": {
+            "type": "string"
+          },
           "lastName": {
             "type": "string"
           },
@@ -1163,19 +1042,49 @@
             "type": "string"
           },
           "gender": {
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ]
+          },
+          "maritalStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaritalStatus"
+              }
+            ]
           },
           "phoneNumber": {
             "type": "string"
           },
+          "alternativePhoneNumber": {
+            "type": "string"
+          },
+          "preferredContact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PreferredContact"
+              }
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
           "address": {
             "type": "string"
           },
-          "medicalRecord": {
-            "$ref": "#/components/schemas/CreateMedicalRecordDto"
+          "city": {
+            "type": "string"
           },
-          "insuranceInfo": {
-            "$ref": "#/components/schemas/CreateInsuranceInfoDto"
+          "state": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "kinesitherapeuteId": {
+            "type": "string"
           },
           "emergencyContacts": {
             "type": "array",
@@ -1358,6 +1267,9 @@
           "firstName": {
             "type": "string"
           },
+          "middleName": {
+            "type": "string"
+          },
           "lastName": {
             "type": "string"
           },
@@ -1368,19 +1280,49 @@
             "type": "string"
           },
           "gender": {
-            "type": "string"
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Gender"
+              }
+            ]
+          },
+          "maritalStatus": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MaritalStatus"
+              }
+            ]
           },
           "phoneNumber": {
             "type": "string"
           },
+          "alternativePhoneNumber": {
+            "type": "string"
+          },
+          "preferredContact": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PreferredContact"
+              }
+            ]
+          },
+          "active": {
+            "type": "boolean"
+          },
           "address": {
             "type": "string"
           },
-          "medicalRecord": {
-            "$ref": "#/components/schemas/CreateMedicalRecordDto"
+          "city": {
+            "type": "string"
           },
-          "insuranceInfo": {
-            "$ref": "#/components/schemas/CreateInsuranceInfoDto"
+          "state": {
+            "type": "string"
+          },
+          "zipCode": {
+            "type": "string"
+          },
+          "kinesitherapeuteId": {
+            "type": "string"
           },
           "emergencyContacts": {
             "type": "array",
@@ -1389,20 +1331,6 @@
             }
           }
         }
-      },
-      "CreateDocumentDto": {
-        "type": "object",
-        "properties": {
-          "documentType": {
-            "type": "string"
-          },
-          "signed": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "documentType"
-        ]
       }
     }
   }

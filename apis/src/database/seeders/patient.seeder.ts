@@ -2,7 +2,6 @@ import { EntityManager } from 'typeorm';
 import { BaseSeeder } from './base.seeder';
 import { faker } from '@faker-js/faker';
 import { Patient } from '../../modules/patient/patient.entity';
-import { Kinesitherapeute } from '../../kinesitherapeute/entities/kinesitherapeute.entity';
 
 export class PatientSeeder extends BaseSeeder {
   protected static readonly entityClass = Patient;
@@ -59,15 +58,15 @@ export class PatientSeeder extends BaseSeeder {
     };
 
     // Get all kinesitherapeutes to associate with patients
-    const kinesitherapeutes = await this.entityManager.find(Kinesitherapeute, {
-      relations: ['user'], // Eagerly load the user relation
-    });
+    // const kinesitherapeutes = await this.entityManager.find(Kinesitherapeute, {
+    //   relations: ['user'], // Eagerly load the user relation
+    // });
 
-    if (kinesitherapeutes.length === 0) {
-      throw new Error(
-        'No kinesitherapeutes found. Please run the kinesitherapeute seeder first.',
-      );
-    }
+    // if (kinesitherapeutes.length === 0) {
+    //   throw new Error(
+    //     'No kinesitherapeutes found. Please run the kinesitherapeute seeder first.',
+    //   );
+    // }
 
     // Create an array to collect patients
     const patients: Patient[] = [];
@@ -84,7 +83,7 @@ export class PatientSeeder extends BaseSeeder {
         .toLowerCase();
 
       // Random kinesitherapeute assignment
-      const randomKine = faker.helpers.arrayElement(kinesitherapeutes);
+      // const randomKine = faker.helpers.arrayElement(kinesitherapeutes);
 
       // Create patient entity
       const patient = new Patient();
@@ -98,18 +97,18 @@ export class PatientSeeder extends BaseSeeder {
         max: 90,
         mode: 'age',
       });
-      patient.gender = faker.helpers.arrayElement(['Male', 'Female']);
-      patient.kinesitherapeute = randomKine;
+      // patient.gender = faker.helpers.arrayElement(['Male', 'Female']);
+      // patient.kinesitherapeute = randomKine;
 
       // Make sure randomKine.user exists before accessing id
-      if (!randomKine.user) {
-        console.error(
-          `Kinesitherapeute with ID ${randomKine.id} has no associated user!`,
-        );
-        continue; // Skip this patient and move to the next
-      }
+      // if (!randomKine.user) {
+      //   console.error(
+      //     `Kinesitherapeute with ID ${randomKine.id} has no associated user!`,
+      //   );
+      //   continue; // Skip this patient and move to the next
+      // }
 
-      patient.createdByUserId = randomKine.user.id;
+      // patient.createdByUserId = randomKine.user.id;
 
       // Add to patients array
       patients.push(patient);

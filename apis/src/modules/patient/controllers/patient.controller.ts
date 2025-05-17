@@ -37,6 +37,9 @@ import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { PatientResponseDto } from '../dto/patient-response.dto';
 import { diskStorage, Multer } from 'multer';
 import { extname } from 'path';
+import { User } from '@/modules/users/entities/user.entity';
+import { Patient } from '../patient.entity';
+// import { use } from 'react';
 
 @ApiTags('patients')
 @ApiBearerAuth()
@@ -55,10 +58,9 @@ export class PatientController {
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async create(
     @Body() createPatientDto: CreatePatientDto,
-    @CurrentUser() user: UserDto,
-  ) {
-    const patient = await this.patientService.create(createPatientDto, user);
-    return new PatientResponseDto(patient);
+    @CurrentUser() user: User, // adjust type as needed
+  ): Promise<Patient> {
+    return this.patientService.create(createPatientDto, user);
   }
 
   @Get()

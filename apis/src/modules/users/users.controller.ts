@@ -18,14 +18,14 @@ import {
   ApiBearerAuth,
   ApiParam,
 } from '@nestjs/swagger';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto, ChangePasswordDto } from './dto/update-user.dto';
 import { QueryUsersDto } from './dto/query-users.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UserRole } from './entities/user.entity';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { RolesGuard } from '@/common/guards/roles.guard';
 
 @ApiTags('api/users')
 @ApiBearerAuth()

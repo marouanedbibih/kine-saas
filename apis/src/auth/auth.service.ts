@@ -2,15 +2,16 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
-  BadRequestException,
+  // BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User, UserRole } from '../users/entities/user.entity';
+// import { User, UserRole } from '../users/entities/user.entity';
 import { LoginDto, AuthUserDto, LoginResponseDto } from './dto/auth.dto';
 import { TokenService } from './token.service';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
+import { User } from '@/modules/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -111,6 +112,7 @@ export class AuthService {
         tokens,
       };
     } catch (error) {
+      console.error('Error refreshing token:', error);
       throw new UnauthorizedException('Invalid refresh token');
     }
   }
