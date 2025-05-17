@@ -12,12 +12,11 @@ import { Repository } from 'typeorm';
 import { CreatePatientDto } from '../dto/create-patient.dto';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { UserDto } from '../../../common/interfaces/user.interface';
-import { UserRole } from '../../../common/interfaces/user-role.enum';
 // import { MedicalRecordService } from '../../medical-record/services/medical-record.service';
 // import { InsuranceInfoService } from '../../insurance-info/services/insurance-info.service';
 // import { EmergencyContactService } from '../../emergency-contact/services/emergency-contact.service';
 import { Patient } from '../patient.entity';
-import { User } from '@/modules/users/entities/user.entity';
+import { User, UserRole } from '@/modules/users/entities/user.entity';
 import { EmergencyContact } from '@/modules/emergency-contact/emergency-contact.entity';
 @Injectable()
 export class PatientService {
@@ -58,7 +57,7 @@ export class PatientService {
   }
 
   async findAll(
-    currentUser: UserDto,
+    currentUser: User,
     page = 1,
     limit = 10,
     search?: string,
@@ -67,11 +66,12 @@ export class PatientService {
       .createQueryBuilder('patient')
       .leftJoinAndSelect('patient.medicalRecord', 'medicalRecord')
       .leftJoinAndSelect('patient.insuranceInfo', 'insuranceInfo')
-      .leftJoinAndSelect('patient.emergencyContacts', 'emergencyContacts');
+      .leftJoinAndSelect('patient.emergencyContact', 'emergencyContact')
+      .leftJoinAndSelect('patient.kinesitherapeute', 'kinesitherapeute');
 
     // Only admins can see all patients, kinesitherapists only see their own
     if (currentUser.role !== UserRole.ADMIN) {
-      queryBuilder.where('patient.createdByUserId = :userId', {
+      queryBuilder.where('patient.kinesitherapeute_id = :userId', {
         userId: currentUser.id,
       });
     }

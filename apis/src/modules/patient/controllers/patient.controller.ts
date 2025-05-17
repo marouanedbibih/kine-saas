@@ -75,7 +75,7 @@ export class PatientController {
   @ApiQuery({ name: 'search', required: false, type: String })
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async findAll(
-    @CurrentUser() user: UserDto,
+    @CurrentUser() user: User,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('search') search?: string,
