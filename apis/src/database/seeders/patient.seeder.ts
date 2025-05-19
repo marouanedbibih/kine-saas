@@ -1,7 +1,11 @@
+/* eslint-disable prettier/prettier */
 import { EntityManager } from 'typeorm';
 import { BaseSeeder } from './base.seeder';
 import { faker } from '@faker-js/faker';
-import { Patient } from '../../modules/patient/patient.entity';
+import { Patient, Gender, MaritalStatus, PreferredContact } from '../../modules/patient/patient.entity';
+import { User } from '../../modules/users/entities/user.entity';
+import { UserRole } from '../../modules/users/entities/user.entity';
+import { EmergencyContact } from '../../modules/emergency-contact/emergency-contact.entity';
 
 export class PatientSeeder extends BaseSeeder {
   protected static readonly entityClass = Patient;
@@ -57,16 +61,13 @@ export class PatientSeeder extends BaseSeeder {
       ]);
     };
 
-    // Get all kinesitherapeutes to associate with patients
-    // const kinesitherapeutes = await this.entityManager.find(Kinesitherapeute, {
-    //   relations: ['user'], // Eagerly load the user relation
-    // });
-
-    // if (kinesitherapeutes.length === 0) {
-    //   throw new Error(
-    //     'No kinesitherapeutes found. Please run the kinesitherapeute seeder first.',
-    //   );
-    // }
+    // Get all kinesitherapeute users to associate with patients
+    const kinesitherapeutes = await this.entityManager.find(User, {
+      where: { role: UserRole.KINESITHERAPEUTE },
+    });
+    if (kinesitherapeutes.length === 0) {
+      throw new Error('No kinesitherapeute users found. Please seed users first.');
+    }
 
     // Create an array to collect patients
     const patients: Patient[] = [];
@@ -83,32 +84,63 @@ export class PatientSeeder extends BaseSeeder {
         .toLowerCase();
 
       // Random kinesitherapeute assignment
-      // const randomKine = faker.helpers.arrayElement(kinesitherapeutes);
+      const randomKine = faker.helpers.arrayElement(kinesitherapeutes);
 
-      // Create patient entity
+      // Create patient entity (without emergencyContact)
       const patient = new Patient();
       patient.firstName = firstName;
+      patient.middleName = faker.person.middleName();
       patient.lastName = lastName;
       patient.email = email;
       patient.phoneNumber = phone;
+      patient.alternativePhoneNumber = generateMoroccanPhone();
       patient.address = address;
+      patient.city = city;
+      patient.state = faker.location.state();
+      patient.zipCode = faker.location.zipCode();
       patient.dateOfBirth = faker.date.birthdate({
         min: 5,
         max: 90,
         mode: 'age',
       });
-      // patient.gender = faker.helpers.arrayElement(['Male', 'Female']);
-      // patient.kinesitherapeute = randomKine;
+      patient.gender = faker.helpers.arrayElement([
+        Gender.MALE,
+        Gender.FEMALE,
+        Gender.OTHER,
+        Gender.PREFER_NOT_TO_SAY,
+      ]);
+      patient.maritalStatus = faker.helpers.arrayElement([
+        MaritalStatus.SINGLE,
+        MaritalStatus.MARRIED,
+        MaritalStatus.DIVORCED,
+        MaritalStatus.WIDOWED,
+        MaritalStatus.SEPARATED,
+      ]);
+      patient.preferredContact = faker.helpers.arrayElement([
+        PreferredContact.PHONE,
+        PreferredContact.EMAIL,
+        PreferredContact.SMS,
+      ]);
+      patient.profilePhotoUrl = "";
+      patient.kinesitherapeute = randomKine;
 
-      // Make sure randomKine.user exists before accessing id
-      // if (!randomKine.user) {
-      //   console.error(
-      //     `Kinesitherapeute with ID ${randomKine.id} has no associated user!`,
-      //   );
-      //   continue; // Skip this patient and move to the next
-      // }
+      // Save patient first
+      await this.entityManager.save(patient);
 
-      // patient.createdByUserId = randomKine.user.id;
+      // Create emergency contact for this patient
+      const emergencyContact = new EmergencyContact();
+      emergencyContact.name = faker.person.fullName();
+      emergencyContact.relationship = faker.helpers.arrayElement(['Parent', 'Sibling', 'Spouse', 'Friend', 'Other']);
+      emergencyContact.phoneNumber = generateMoroccanPhone();
+      emergencyContact.email = faker.internet.email();
+      emergencyContact.patient = patient;
+
+      // Save emergency contact
+      await this.entityManager.save(emergencyContact);
+
+      // Now update patient to set the emergencyContact
+      patient.emergencyContact = emergencyContact;
+      await this.entityManager.save(patient);
 
       // Add to patients array
       patients.push(patient);

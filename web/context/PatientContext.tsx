@@ -48,6 +48,8 @@ interface PatientContextProps {
   // Helper operations
   clearErrors: () => void;
   refreshPatients: () => Promise<void>;
+  handleFetchPatientDetail: (patientId: string) => Promise<void>;
+  handleChangeInput: (field: string, value: any) => void;
 }
 
 const defaultFilters: QueryPatientsDto = {
@@ -125,6 +127,8 @@ export const PatientContext = createContext<PatientContextProps>({
   // Helper operations
   clearErrors: () => {},
   refreshPatients: async () => { throw new Error('PatientContext not initialized') },
+  handleFetchPatientDetail: async () => { throw new Error('PatientContext not initialized') },
+  handleChangeInput: () => {},
 });
 
 export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -445,6 +449,71 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
     return;
   };
 
+  // Fetch and set patientRequest for editing
+  const handleFetchPatientDetail = async (patientId: string) => {
+    setLoading((prev) => ({ ...prev, form: true }));
+    clearErrors();
+    try {
+      const patient = await PatientService.getPatient(patientId);
+      setRequestPatient({
+        firstName: patient.firstName || "",
+        lastName: patient.lastName || "",
+        middleName: patient.middleName || "",
+        email: patient.email || "",
+        dateOfBirth: patient.dateOfBirth || "",
+        gender: patient.gender || Gender.PREFER_NOT_TO_SAY,
+        maritalStatus: patient.maritalStatus || MaritalStatus.SINGLE,
+        phoneNumber: patient.phoneNumber || "",
+        address: patient.address || "",
+        city: patient.city || "",
+        state: patient.state || "",
+        zipCode: patient.zipCode || "",
+        alternativePhoneNumber: patient.alternativePhoneNumber || "",
+        preferredContact: patient.preferredContact || PreferredContact.PHONE,
+        emergencyContact: patient.emergencyContact ? {
+          name: patient.emergencyContact.name || "",
+          phoneNumber: patient.emergencyContact.phoneNumber || "",
+          relationship: patient.emergencyContact.relationship || "",
+          email: patient.emergencyContact.email || "",
+        } : { name: "", phoneNumber: "", relationship: "", email: "" },
+        // Add other fields as needed
+      });
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.message || err.message || `Failed to fetch patient ${patientId}`;
+      setError(errorMsg);
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive",
+      });
+      throw err;
+    } finally {
+      setLoading((prev) => ({ ...prev, form: false }));
+    }
+  };
+
+  // Handle input change for requestPatient (supports nested fields with dot notation)
+  const handleChangeInput = (field: string, value: any) => {
+    setRequestPatient(prev => {
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        const parentValue = (prev as any)[parent] && typeof (prev as any)[parent] === 'object' ? (prev as any)[parent] : {};
+        return {
+          ...prev,
+          [parent]: {
+            ...parentValue,
+            [child]: value,
+          },
+        };
+      } else {
+        return {
+          ...prev,
+          [field]: value,
+        };
+      }
+    });
+  };
+
   // Fetch patients when filters change
   useEffect(() => {
     fetchPatients();
@@ -481,6 +550,8 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
     // Helper operations
     clearErrors,
     refreshPatients,
+    handleFetchPatientDetail,
+    handleChangeInput,
   };
 
   return <PatientContext.Provider value={contextValue}>{children}</PatientContext.Provider>;

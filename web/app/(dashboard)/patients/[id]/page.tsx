@@ -435,15 +435,15 @@ export default function PatientDetailsPage({ params }: { params: { id: string } 
                 </div>
               )}
 
-              {selectedPatient.emergencyContacts && selectedPatient.emergencyContacts.length > 0 && (
+              {selectedPatient.emergencyContact && (
                 <div className="flex items-start gap-3">
                   <User className="shrink-0 h-5 w-5 text-muted-foreground mt-0.5" />
                   <div className="space-y-1.5">
                     <h3 className="font-medium mb-3">Emergency Contact</h3>
-                    <p className="text-sm">Name: {selectedPatient.emergencyContacts[0].name}</p>
-                    {selectedPatient.emergencyContacts[0].relationship && <p className="text-sm">Relationship: {selectedPatient.emergencyContacts[0].relationship}</p>}
-                    <p className="text-sm">Phone: {selectedPatient.emergencyContacts[0].phoneNumber}</p>
-                    {selectedPatient.emergencyContacts[0].email && <p className="text-sm">Email: {selectedPatient.emergencyContacts[0].email}</p>}
+                    <p className="text-sm font-medium">{selectedPatient.emergencyContact.name}</p>
+                    <p className="text-sm">Relationship: {selectedPatient.emergencyContact.relationship}</p>
+                    <p className="text-sm">Phone: {selectedPatient.emergencyContact.phoneNumber}</p>
+                    {selectedPatient.emergencyContact.email && <p className="text-sm">Email: {selectedPatient.emergencyContact.email}</p>}
                   </div>
                 </div>
               )}

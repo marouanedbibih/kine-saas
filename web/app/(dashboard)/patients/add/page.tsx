@@ -249,7 +249,7 @@ export default function AddPatientPage() {
                       <Label htmlFor="gender">
                         Gender<span className="text-destructive"> *</span>
                       </Label>
-                      <Select value={requestPatient.gender} onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, gender: value }))} required>
+                      <Select value={requestPatient.gender} onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, gender: value as Gender }))} required>
                         <SelectTrigger id="gender">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
@@ -263,7 +263,7 @@ export default function AddPatientPage() {
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="marital-status">Marital Status</Label>
-                      <Select value={requestPatient.maritalStatus} onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, maritalStatus: value }))}>
+                      <Select value={requestPatient.maritalStatus} onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, maritalStatus: value as MaritalStatus }))}>
                         <SelectTrigger id="marital-status">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
@@ -324,7 +324,11 @@ export default function AddPatientPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="preferred-contact">Preferred Contact Method</Label>
-                    <RadioGroup value={requestPatient.preferredContact} onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, preferredContact: value }))} className="flex flex-col space-y-1">
+                    <RadioGroup
+                      value={requestPatient.preferredContact}
+                      onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, preferredContact: value as PreferredContact }))}
+                      className="flex flex-col space-y-1"
+                    >
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value={PreferredContact.PHONE} id="phone-contact" />
                         <Label htmlFor="phone-contact">Phone</Label>
@@ -348,21 +352,85 @@ export default function AddPatientPage() {
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="emergency-name">Contact Name</Label>
-                      <Input id="emergency-name" placeholder="Enter emergency contact name" value={requestPatient.emergencyContact?.name || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, emergencyContact: { ...prev.emergencyContact, name: e.target.value } }))} />
+                      <Input
+                        id="emergency-name"
+                        placeholder="Enter emergency contact name"
+                        value={requestPatient.emergencyContact?.name || ""}
+                        onChange={e =>
+                          setRequestPatient((prev: CreatePatientDto) => ({
+                            ...prev,
+                            emergencyContact: {
+                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
+                              name: e.target.value,
+                              relationship: prev.emergencyContact?.relationship ?? "",
+                              phoneNumber: prev.emergencyContact?.phoneNumber ?? "",
+                              email: prev.emergencyContact?.email ?? "",
+                            },
+                          }))
+                        }
+                      />
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="emergency-relation">Relationship</Label>
-                      <Input id="emergency-relation" placeholder="Enter relationship" value={requestPatient.emergencyContact?.relationship || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, emergencyContact: { ...prev.emergencyContact, relationship: e.target.value } }))} />
+                      <Input
+                        id="emergency-relation"
+                        placeholder="Enter relationship"
+                        value={requestPatient.emergencyContact?.relationship || ""}
+                        onChange={e =>
+                          setRequestPatient((prev: CreatePatientDto) => ({
+                            ...prev,
+                            emergencyContact: {
+                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
+                              name: prev.emergencyContact?.name ?? "",
+                              relationship: e.target.value,
+                              phoneNumber: prev.emergencyContact?.phoneNumber ?? "",
+                              email: prev.emergencyContact?.email ?? "",
+                            },
+                          }))
+                        }
+                      />
                     </div>
                   </div>
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="emergency-phone">Phone Number</Label>
-                      <Input id="emergency-phone" placeholder="Enter emergency contact phone" value={requestPatient.emergencyContact?.phoneNumber || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, emergencyContact: { ...prev.emergencyContact, phoneNumber: e.target.value } }))} />
+                      <Input
+                        id="emergency-phone"
+                        placeholder="Enter emergency contact phone"
+                        value={requestPatient.emergencyContact?.phoneNumber || ""}
+                        onChange={e =>
+                          setRequestPatient((prev: CreatePatientDto) => ({
+                            ...prev,
+                            emergencyContact: {
+                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
+                              name: prev.emergencyContact?.name ?? "",
+                              relationship: prev.emergencyContact?.relationship ?? "",
+                              phoneNumber: e.target.value,
+                              email: prev.emergencyContact?.email ?? "",
+                            },
+                          }))
+                        }
+                      />
                     </div>
                     <div className="flex-1 space-y-2">
-                      <Label htmlFor="emergency-email">Email (Optional)</Label>
-                      <Input id="emergency-email" type="email" placeholder="Enter emergency contact email" value={requestPatient.emergencyContact?.email || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, emergencyContact: { ...prev.emergencyContact, email: e.target.value } }))} />
+                      <Label htmlFor="emergency-email">Email</Label>
+                      <Input
+                        id="emergency-email"
+                        placeholder="Enter emergency contact email"
+                        value={requestPatient.emergencyContact?.email || ""}
+                        onChange={e =>
+                          setRequestPatient((prev: CreatePatientDto) => ({
+                            ...prev,
+                            emergencyContact: {
+                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
+                              name: prev.emergencyContact?.name ?? "",
+                              relationship: prev.emergencyContact?.relationship ?? "",
+                              phoneNumber: prev.emergencyContact?.phoneNumber ?? "",
+                              email: e.target.value,
+                            },
+                          }))
+                        }
+                      />
                     </div>
                   </div>
                 </div>

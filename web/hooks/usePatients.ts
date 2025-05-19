@@ -105,7 +105,7 @@ export const usePatientDocuments = (): {
 export const usePatientCreation = (): {
   loading: ILoading;
   error: string | null;
-  createPatient: (patientData: CreatePatientDto) => Promise<PatientResponseDto>;
+  createPatient: (patientData: CreatePatientDto) => Promise<void>;
 } => {
   const {
     loading,

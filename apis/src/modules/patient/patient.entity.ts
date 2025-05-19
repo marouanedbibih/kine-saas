@@ -44,10 +44,6 @@ export enum PreferredContact {
 
 @Entity('patients')
 export class Patient {
-  push(patient: Patient) {
-    throw new Error('Method not implemented.');
-  }
-
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -124,11 +120,14 @@ export class Patient {
   })
   insuranceInfo: InsuranceInfo;
 
-  @OneToMany(
+  @OneToOne(
     () => EmergencyContact,
     (emergencyContact) => emergencyContact.patient,
-    { cascade: true },
+    {
+      cascade: true,
+    },
   )
+  @JoinColumn()
   emergencyContact: EmergencyContact;
 
   @OneToMany(

@@ -49,15 +49,8 @@ export interface CreatePatientDto {
   state?: string;
   zipCode?: string;
   kinesitherapeuteId?: string;
-  // Changed to match backend structure - emergencyContacts is an array
-  emergencyContacts?: {
-    name: string;
-    relationship: string;
-    phoneNumber: string;
-    email?: string;
-  }[];
-  // For backward compatibility with existing form implementations
   emergencyContact?: {
+    id?: string;
     name: string;
     relationship: string;
     phoneNumber: string;
@@ -105,9 +98,10 @@ export interface UpdatePatientDto {
   zipCode?: string;
   kinesitherapeuteId?: string;
   emergencyContact?: {
-    name?: string;
-    relationship?: string;
-    phoneNumber?: string;
+    id?: string;
+    name: string;
+    relationship: string;
+    phoneNumber: string;
     email?: string;
   };
   medicalRecord?: {
@@ -236,13 +230,13 @@ export interface PatientResponseDto {
     secondaryGroupNumber?: string;
   };
 
-  emergencyContacts?: Array<{
-    id: string;
+  emergencyContact?: {
+    id?: string;
     name: string;
     relationship: string;
     phoneNumber: string;
     email?: string;
-  }>;
+  };
 
   consentDocuments?: Array<{
     id: string;

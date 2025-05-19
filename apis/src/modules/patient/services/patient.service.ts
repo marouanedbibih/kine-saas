@@ -1,23 +1,21 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
+  ForbiddenException,
   Injectable,
+  NotFoundException,
   // NotFoundException,
   // ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePatientDto } from '../dto/create-patient.dto';
-import { UpdatePatientDto } from '../dto/update-patient.dto';
-import { UserDto } from '../../../common/interfaces/user.interface';
 // import { MedicalRecordService } from '../../medical-record/services/medical-record.service';
 // import { InsuranceInfoService } from '../../insurance-info/services/insurance-info.service';
 // import { EmergencyContactService } from '../../emergency-contact/services/emergency-contact.service';
 import { Patient } from '../patient.entity';
 import { User, UserRole } from '@/modules/users/entities/user.entity';
 import { EmergencyContact } from '@/modules/emergency-contact/emergency-contact.entity';
+import { UpdatePatientDto } from '../dto/update-patient.dto';
 @Injectable()
 export class PatientService {
   [x: string]: any;
@@ -93,63 +91,64 @@ export class PatientService {
     return { patients, total };
   }
 
-  // async findOne(id: string, currentUser: UserDto): Promise<Patient> {
-  //   const patient = await this.patientRepository.findOne({
-  //     where: { id },
-  //     relations: [
-  //       'medicalRecord',
-  //       'insuranceInfo',
-  //       'emergencyContacts',
-  //       'consentDocuments',
-  //     ],
-  //   });
+  async findOne(id: string, currentUser: User): Promise<Patient> {
+    const patient = await this.patientRepository.findOne({
+      where: { id },
+      relations: [
+        'medicalRecord',
+        'insuranceInfo',
+        'emergencyContact',
+        'consentDocuments',
+        'kinesitherapeute',
+      ],
+    });
 
-  //   if (!patient) {
-  //     throw new NotFoundException(`Patient with ID ${id} not found`);
-  //   }
+    if (!patient) {
+      throw new NotFoundException(`Patient with ID ${id} not found`);
+    }
 
-  //   // Check if user has access to this patient
-  //   if (
-  //     currentUser.role !== UserRole.ADMIN &&
-  //     patient.createdByUserId !== currentUser.id
-  //   ) {
-  //     throw new ForbiddenException(
-  //       `You don't have permission to access this patient`,
-  //     );
-  //   }
+    // Allow if admin, or if the current user is the patient's kinesitherapeute
+    if (
+      currentUser.role !== UserRole.ADMIN &&
+      (!patient.kinesitherapeute ||
+        patient.kinesitherapeute.id !== currentUser.id)
+    ) {
+      throw new ForbiddenException(
+        `You don't have permission to access this patient`,
+      );
+    }
 
-  //   return patient;
-  // }
+    return patient;
+  }
 
   async update(
     id: string,
     updatePatientDto: UpdatePatientDto,
-    currentUser: UserDto,
+    currentUser: User,
   ): Promise<Patient> {
     const patient = await this.findOne(id, currentUser);
 
     // Update main patient fields
     Object.assign(patient, updatePatientDto);
 
-    // Handle nested entities updates separately if needed
-    // if (updatePatientDto.medicalRecord) {
-    //   await this.medicalRecordService.update(
-    //     patient.medicalRecord.id,
-    //     updatePatientDto.medicalRecord,
-    //   );
-    // }
+    if (updatePatientDto.emergencyContact) {
+      const { emergencyContact, ...rest } = updatePatientDto;
+      const emergencyContactEntity =
+        await this.emergencyContactRepository.findOne({
+          where: { id: emergencyContact.id },
+        });
 
-    // if (updatePatientDto.insuranceInfo) {
-    //   await this.insuranceInfoService.update(
-    //     patient.insuranceInfo.id,
-    //     updatePatientDto.insuranceInfo,
-    //   );
-    // }
-
-    // if (updatePatientDto.emergencyContacts) {
-    //   // Handle emergency contacts updates...
-    //   // This would typically involve more complex logic to add/update/remove contacts
-    // }
+      if (emergencyContactEntity) {
+        Object.assign(emergencyContactEntity, emergencyContact);
+        await this.emergencyContactRepository.save(emergencyContactEntity);
+      } else {
+        const newEmergencyContact = this.emergencyContactRepository.create({
+          ...emergencyContact,
+          patient,
+        });
+        await this.emergencyContactRepository.save(newEmergencyContact);
+      }
+    }
 
     return this.patientRepository.save(patient);
   }
@@ -157,14 +156,14 @@ export class PatientService {
   async updatePhoto(
     id: string,
     photoUrl: string,
-    currentUser: UserDto,
+    currentUser: User,
   ): Promise<Patient> {
     const patient = await this.findOne(id, currentUser);
     patient.profilePhotoUrl = photoUrl;
     return this.patientRepository.save(patient);
   }
 
-  async remove(id: string, currentUser: UserDto): Promise<void> {
+  async remove(id: string, currentUser: User): Promise<void> {
     const patient = await this.findOne(id, currentUser);
     await this.patientRepository.remove(patient);
   }

@@ -1320,9 +1320,6 @@
           },
           "kinesitherapeuteId": {
             "type": "string"
-          },
-          "emergencyContact": {
-            "$ref": "#/components/schemas/CreateEmergencyContactDto"
           }
         }
       }

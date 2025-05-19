@@ -29,7 +29,6 @@ import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../../common/decorators/current-user.decorator';
-import { UserDto } from '../../../common/interfaces/user.interface';
 import { UserRole } from '../../../common/interfaces/user-role.enum';
 import { PatientService } from '../services/patient.service';
 import { CreatePatientDto } from '../dto/create-patient.dto';
@@ -109,7 +108,7 @@ export class PatientController {
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: UserDto,
+    @CurrentUser() user: User,
   ) {
     const patient = await this.patientService.findOne(id, user);
     return new PatientResponseDto(patient);
@@ -127,7 +126,7 @@ export class PatientController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updatePatientDto: UpdatePatientDto,
-    @CurrentUser() user: UserDto,
+    @CurrentUser() user: User,
   ) {
     const patient = await this.patientService.update(
       id,
@@ -144,7 +143,7 @@ export class PatientController {
   @Roles(UserRole.ADMIN)
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: UserDto,
+    @CurrentUser() user: User,
   ) {
     await this.patientService.remove(id, user);
     return { message: 'Patient deleted successfully' };
@@ -179,7 +178,7 @@ export class PatientController {
   async uploadPhoto(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFile() file: Multer.File,
-    @CurrentUser() user: UserDto,
+    @CurrentUser() user: User,
   ) {
     const photoUrl = `photos/${file.filename}`;
     const patient = await this.patientService.updatePhoto(id, photoUrl, user);
