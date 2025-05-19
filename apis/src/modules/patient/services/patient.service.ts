@@ -36,22 +36,40 @@ export class PatientService {
     currentUser: User,
   ): Promise<Patient> {
     const { emergencyContact, ...patientData } = createPatientDto;
+
+    let savedEmergencyContact: EmergencyContact | undefined = undefined;
+    if (emergencyContact) {
+      const emergencyContactEntity = this.emergencyContactRepository.create({
+        ...emergencyContact,
+      });
+      savedEmergencyContact = await this.emergencyContactRepository.save(
+        emergencyContactEntity,
+      );
+    }
+
     const patient = this.patientRepository.create({
       ...patientData,
-      kinesitherapeute: currentUser, // set the relation
+      kinesitherapeute: currentUser,
+      emergencyContact: savedEmergencyContact,
     });
 
     const savedPatient = await this.patientRepository.save(patient);
 
-    if (emergencyContact) {
-      const emergencyContactEntity = this.emergencyContactRepository.create({
-        ...emergencyContact,
-        patient: savedPatient, // set the relation
-      });
-      await this.emergencyContactRepository.save(emergencyContactEntity);
+    // Optionally reload with relations
+    const patientWithRelations = await this.patientRepository.findOne({
+      where: { id: savedPatient.id },
+      relations: [
+        'medicalRecord',
+        'insuranceInfo',
+        'emergencyContact',
+        'consentDocuments',
+        'kinesitherapeute',
+      ],
+    });
+    if (!patientWithRelations) {
+      throw new Error('Patient not found after save.');
     }
-
-    return savedPatient;
+    return patientWithRelations;
   }
 
   async findAll(
@@ -117,7 +135,7 @@ export class PatientService {
         `You don't have permission to access this patient`,
       );
     }
-
+    console.log('patient', patient);
     return patient;
   }
 

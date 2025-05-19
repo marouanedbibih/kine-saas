@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import PatientService from "@/services/patient.service";
 import { UpdatePatientDto, PatientResponseDto, CreatePatientDto } from "@/types/patient";
@@ -16,7 +16,7 @@ interface UseEditPatientResult {
 }
 
 export function useEditPatient(patientId: string): UseEditPatientResult {
-  const { requestPatient, setRequestPatient } = usePatientContext();
+  const { requestPatient, setRequestPatient, resetRequestPatient } = usePatientContext();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -74,9 +74,9 @@ export function useEditPatient(patientId: string): UseEditPatientResult {
     setError(null);
     return PatientService.updatePatient(patientId, requestPatient)
       .then((response) => {
-        console.log("Updated patient:", response);
-        alertService.success(`Patient ${response.firstName} ${response.lastName} mis à jour avec succès`);
         router.push("/patients");
+        resetRequestPatient();
+        alertService.success(`Patient ${response.firstName} ${response.lastName} mis à jour avec succès`);
       })
       .catch((err: any) => {
         setError(err.message || "Failed to update patient");

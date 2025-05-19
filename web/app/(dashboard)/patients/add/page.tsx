@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useCreatePatient } from "@/hooks/useCreatePatient";
 import { usePatientContext, usePatientCreation } from "@/hooks/usePatients";
 import { BloodType, CreatePatientDto, Gender, MaritalStatus, PreferredContact } from "@/types/patient";
 import { format } from "date-fns";
@@ -22,32 +23,13 @@ import { useRouter } from "next/navigation";
 import { useState, FormEvent } from "react";
 
 export default function AddPatientPage() {
-  const {loading, error } = usePatientCreation();
+  const { loading, error } = usePatientCreation();
   const { toast } = useToast();
   const router = useRouter();
-  const { requestPatient, setRequestPatient, createPatient } = usePatientContext();
-
-  // Form state
-  const [dateOfBirth, setDateOfBirth] = useState<Date | undefined>(undefined);
-  const [firstName, setFirstName] = useState<string>("");
-  const [middleName, setMiddleName] = useState<string>("");
-  const [lastName, setLastName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
-  const [alternativePhoneNumber, setAlternativePhoneNumber] = useState<string>("");
-  const [preferredContact, setPreferredContact] = useState<PreferredContact>(PreferredContact.PHONE);
-  const [gender, setGender] = useState<Gender | "">("");
-  const [maritalStatus, setMaritalStatus] = useState<MaritalStatus | "">("");
-  const [address, setAddress] = useState<string>("");
-  const [city, setCity] = useState<string>("");
-  const [state, setState] = useState<string>("");
-  const [zipCode, setZipCode] = useState<string>("");
-
-  // Emergency contact
-  const [emergencyName, setEmergencyName] = useState<string>("");
-  const [emergencyRelationship, setEmergencyRelationship] = useState<string>("");
-  const [emergencyPhone, setEmergencyPhone] = useState<string>("");
-  const [emergencyEmail, setEmergencyEmail] = useState<string>("");
+  const { requestPatient, setRequestPatient, handleChangeInput } = usePatientContext();
+  const {
+    createPatient,
+  } = useCreatePatient();
 
   // Medical record
   const [bloodType, setBloodType] = useState<BloodType | "">("");
@@ -88,96 +70,7 @@ export default function AddPatientPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    createPatient(requestPatient);
-
-    // // Validate required fields
-    // if (!firstName || !lastName || !email || !phoneNumber || !gender) {
-    //   toast({
-    //     title: "Validation Error",
-    //     description: "Please fill in all required fields.",
-    //     variant: "destructive",
-    //   });
-    //   return;
-    // }
-
-    // try {
-    //   // Create patient data object
-    //   const patientData: CreatePatientDto = {
-    //     firstName,
-    //     middleName: middleName || undefined,
-    //     lastName,
-    //     email,
-    //     phoneNumber,
-    //     alternativePhoneNumber: alternativePhoneNumber || undefined,
-    //     preferredContact,
-    //     gender: gender as Gender,
-    //     dateOfBirth: dateOfBirth ? format(dateOfBirth, "yyyy-MM-dd") : "",
-    //     maritalStatus: (maritalStatus as MaritalStatus) || undefined,
-    //     address: address || undefined,
-    //     city: city || undefined,
-    //     state: state || undefined,
-    //     zipCode: zipCode || undefined,
-    //     emergencyContact: emergencyName
-    //       ? {
-    //           name: emergencyName,
-    //           relationship: emergencyRelationship,
-    //           phoneNumber: emergencyPhone,
-    //           email: emergencyEmail || undefined,
-    //         }
-    //       : undefined,
-    //     medicalRecord: {
-    //       bloodType: (bloodType as BloodType) || undefined,
-    //       height: height ? parseFloat(height) : undefined,
-    //       weight: weight ? parseFloat(weight) : undefined,
-    //       allergies: allergies || undefined,
-    //       chronicConditions: chronicConditions || undefined,
-    //       currentMedications: medications || undefined,
-    //       smokingStatus: smokingStatus || undefined,
-    //       alcoholConsumption: alcoholConsumption || undefined,
-    //       exerciseFrequency: exerciseFrequency || undefined,
-    //     },
-    //     insuranceInfo: insuranceProvider
-    //       ? {
-    //           provider: insuranceProvider,
-    //           policyNumber: policyNumber,
-    //           groupNumber: groupNumber || undefined,
-    //           primaryInsuredName: primaryInsuredName,
-    //           relationship: insuranceRelationship || undefined,
-    //           validUntil: validUntil ? format(validUntil, "yyyy-MM-dd") : undefined,
-    //           insurancePhone: insurancePhone || undefined,
-    //         }
-    //       : undefined,
-    //   };
-
-    //   console.log("Patient Data: ", patientData);
-
-    //   // Create patient
-    //   const newPatient = await createPatient(patientData);
-
-    //   // Handle profile photo upload if provided
-    //   if (profilePhoto && newPatient?.id) {
-    //     // This would be handled by uploadPatientPhoto in a real implementation
-    //     // For now, we'll just simulate success
-    //     toast({
-    //       title: "Profile Photo",
-    //       description: "Profile photo will be uploaded.",
-    //     });
-    //   }
-
-    //   toast({
-    //     title: "Success",
-    //     description: "Patient created successfully.",
-    //   });
-
-    //   // Redirect to patient list
-    //   router.push("/patients");
-    // } catch (error: any) {
-    //   toast({
-    //     title: "Error",
-    //     description: error.message || "Failed to create patient.",
-    //     variant: "destructive",
-    //   });
-    // }
+    createPatient();
   };
 
   return (
@@ -217,17 +110,17 @@ export default function AddPatientPage() {
                       <Label htmlFor="first-name">
                         First Name<span className="text-destructive"> *</span>
                       </Label>
-                      <Input id="first-name" placeholder="Enter first name" value={requestPatient.firstName} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, firstName: e.target.value }))} required />
+                      <Input id="first-name" placeholder="Enter first name" value={requestPatient.firstName} onChange={(e) => handleChangeInput("firstName", e.target.value)} required />
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="middle-name">Middle Name (Optional)</Label>
-                      <Input id="middle-name" placeholder="Enter middle name" value={requestPatient.middleName || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, middleName: e.target.value }))} />
+                      <Input id="middle-name" placeholder="Enter middle name" value={requestPatient.middleName || ""} onChange={(e) => handleChangeInput("middleName", e.target.value)} />
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="last-name">
                         Last Name<span className="text-destructive"> *</span>
                       </Label>
-                      <Input id="last-name" placeholder="Enter last name" value={requestPatient.lastName} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, lastName: e.target.value }))} required />
+                      <Input id="last-name" placeholder="Enter last name" value={requestPatient.lastName} onChange={(e) => handleChangeInput("lastName", e.target.value)} required />
                     </div>
                   </div>
 
@@ -241,7 +134,7 @@ export default function AddPatientPage() {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={requestPatient.dateOfBirth ? new Date(requestPatient.dateOfBirth) : undefined} onSelect={date => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, dateOfBirth: date ? format(date, "yyyy-MM-dd") : "" }))} />
+                          <Calendar mode="single" selected={requestPatient.dateOfBirth ? new Date(requestPatient.dateOfBirth) : undefined} onSelect={(date) => handleChangeInput("dateOfBirth", date ? format(date, "yyyy-MM-dd") : "")} />
                         </PopoverContent>
                       </Popover>
                     </div>
@@ -249,7 +142,7 @@ export default function AddPatientPage() {
                       <Label htmlFor="gender">
                         Gender<span className="text-destructive"> *</span>
                       </Label>
-                      <Select value={requestPatient.gender} onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, gender: value as Gender }))} required>
+                      <Select value={requestPatient.gender} onValueChange={(value) => handleChangeInput("gender", value)} required>
                         <SelectTrigger id="gender">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
@@ -263,7 +156,7 @@ export default function AddPatientPage() {
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="marital-status">Marital Status</Label>
-                      <Select value={requestPatient.maritalStatus} onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, maritalStatus: value as MaritalStatus }))}>
+                      <Select value={requestPatient.maritalStatus} onValueChange={(value) => handleChangeInput("maritalStatus", value)}>
                         <SelectTrigger id="marital-status">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
@@ -280,21 +173,21 @@ export default function AddPatientPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="address">Address</Label>
-                    <Textarea id="address" placeholder="Enter address" value={requestPatient.address || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, address: e.target.value }))} />
+                    <Textarea id="address" placeholder="Enter address" value={requestPatient.address || ""} onChange={(e) => handleChangeInput("address", e.target.value)} />
                   </div>
 
                   <div className="flex flex-col md:flex-row gap-4">
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" placeholder="Enter city" value={requestPatient.city || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, city: e.target.value }))} />
+                      <Input id="city" placeholder="Enter city" value={requestPatient.city || ""} onChange={(e) => handleChangeInput("city", e.target.value)} />
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="state">State</Label>
-                      <Input id="state" placeholder="Enter state" value={requestPatient.state || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, state: e.target.value }))} />
+                      <Input id="state" placeholder="Enter state" value={requestPatient.state || ""} onChange={(e) => handleChangeInput("state", e.target.value)} />
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="zip">Zip Code</Label>
-                      <Input id="zip" placeholder="Enter zip code" value={requestPatient.zipCode || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, zipCode: e.target.value }))} />
+                      <Input id="zip" placeholder="Enter zip code" value={requestPatient.zipCode || ""} onChange={(e) => handleChangeInput("zipCode", e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -308,27 +201,23 @@ export default function AddPatientPage() {
                       <Label htmlFor="email">
                         Email<span className="text-destructive"> *</span>
                       </Label>
-                      <Input id="email" type="email" placeholder="Enter email address" value={requestPatient.email} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, email: e.target.value }))} required />
+                      <Input id="email" type="email" placeholder="Enter email address" value={requestPatient.email} onChange={(e) => handleChangeInput("email", e.target.value)} required />
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="phone">
                         Phone Number<span className="text-destructive"> *</span>
                       </Label>
-                      <Input id="phone" placeholder="Enter phone number" value={requestPatient.phoneNumber || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, phoneNumber: e.target.value }))} required />
+                      <Input id="phone" placeholder="Enter phone number" value={requestPatient.phoneNumber || ""} onChange={(e) => handleChangeInput("phoneNumber", e.target.value)} required />
                     </div>
                     <div className="flex-1 space-y-2">
                       <Label htmlFor="alt-phone">Alternative Phone (Optional)</Label>
-                      <Input id="alt-phone" placeholder="Enter alternative phone" value={requestPatient.alternativePhoneNumber || ""} onChange={e => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, alternativePhoneNumber: e.target.value }))} />
+                      <Input id="alt-phone" placeholder="Enter alternative phone" value={requestPatient.alternativePhoneNumber || ""} onChange={(e) => handleChangeInput("alternativePhoneNumber", e.target.value)} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="preferred-contact">Preferred Contact Method</Label>
-                    <RadioGroup
-                      value={requestPatient.preferredContact}
-                      onValueChange={value => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, preferredContact: value as PreferredContact }))}
-                      className="flex flex-col space-y-1"
-                    >
+                    <RadioGroup value={requestPatient.preferredContact} onValueChange={(value) => setRequestPatient((prev: CreatePatientDto) => ({ ...prev, preferredContact: value as PreferredContact }))} className="flex flex-col space-y-1">
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value={PreferredContact.PHONE} id="phone-contact" />
                         <Label htmlFor="phone-contact">Phone</Label>
@@ -356,18 +245,7 @@ export default function AddPatientPage() {
                         id="emergency-name"
                         placeholder="Enter emergency contact name"
                         value={requestPatient.emergencyContact?.name || ""}
-                        onChange={e =>
-                          setRequestPatient((prev: CreatePatientDto) => ({
-                            ...prev,
-                            emergencyContact: {
-                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
-                              name: e.target.value,
-                              relationship: prev.emergencyContact?.relationship ?? "",
-                              phoneNumber: prev.emergencyContact?.phoneNumber ?? "",
-                              email: prev.emergencyContact?.email ?? "",
-                            },
-                          }))
-                        }
+                        onChange={(e) => handleChangeInput("emergencyContact.name", e.target.value)}
                       />
                     </div>
                     <div className="flex-1 space-y-2">
@@ -376,18 +254,7 @@ export default function AddPatientPage() {
                         id="emergency-relation"
                         placeholder="Enter relationship"
                         value={requestPatient.emergencyContact?.relationship || ""}
-                        onChange={e =>
-                          setRequestPatient((prev: CreatePatientDto) => ({
-                            ...prev,
-                            emergencyContact: {
-                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
-                              name: prev.emergencyContact?.name ?? "",
-                              relationship: e.target.value,
-                              phoneNumber: prev.emergencyContact?.phoneNumber ?? "",
-                              email: prev.emergencyContact?.email ?? "",
-                            },
-                          }))
-                        }
+                        onChange={(e) => handleChangeInput("emergencyContact.relationship", e.target.value)}
                       />
                     </div>
                   </div>
@@ -398,18 +265,7 @@ export default function AddPatientPage() {
                         id="emergency-phone"
                         placeholder="Enter emergency contact phone"
                         value={requestPatient.emergencyContact?.phoneNumber || ""}
-                        onChange={e =>
-                          setRequestPatient((prev: CreatePatientDto) => ({
-                            ...prev,
-                            emergencyContact: {
-                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
-                              name: prev.emergencyContact?.name ?? "",
-                              relationship: prev.emergencyContact?.relationship ?? "",
-                              phoneNumber: e.target.value,
-                              email: prev.emergencyContact?.email ?? "",
-                            },
-                          }))
-                        }
+                        onChange={(e) => handleChangeInput("emergencyContact.phoneNumber", e.target.value)}
                       />
                     </div>
                     <div className="flex-1 space-y-2">
@@ -418,18 +274,7 @@ export default function AddPatientPage() {
                         id="emergency-email"
                         placeholder="Enter emergency contact email"
                         value={requestPatient.emergencyContact?.email || ""}
-                        onChange={e =>
-                          setRequestPatient((prev: CreatePatientDto) => ({
-                            ...prev,
-                            emergencyContact: {
-                              ...(prev.emergencyContact ?? { name: "", relationship: "", phoneNumber: "", email: "" }),
-                              name: prev.emergencyContact?.name ?? "",
-                              relationship: prev.emergencyContact?.relationship ?? "",
-                              phoneNumber: prev.emergencyContact?.phoneNumber ?? "",
-                              email: e.target.value,
-                            },
-                          }))
-                        }
+                        onChange={(e) => handleChangeInput("emergencyContact.email", e.target.value)}
                       />
                     </div>
                   </div>
@@ -445,7 +290,7 @@ export default function AddPatientPage() {
                         <div className={`h-32 w-32 rounded-full overflow-hidden bg-gray-100 ${profilePhotoUrl ? "" : "flex items-center justify-center"}`}>{profilePhotoUrl ? <img src={profilePhotoUrl} alt="Profile preview" className="h-full w-full object-cover" /> : <Upload className="h-8 w-8 text-gray-400" />}</div>
                         <span className="text-sm font-medium">{profilePhotoUrl ? "Change photo" : "Upload a profile photo"}</span>
                         <span className="text-xs text-muted-foreground">PNG, JPG or JPEG (max. 2MB)</span>
-                        <Input id="profile-photo" name="profilePhoto" type="file" className="hidden" accept="image/png, image/jpeg, image/jpg" onChange={e => handleFileChange(e, setProfilePhoto)} />
+                        <Input id="profile-photo" name="profilePhoto" type="file" className="hidden" accept="image/png, image/jpeg, image/jpg" onChange={(e) => handleFileChange(e, setProfilePhoto)} />
                       </label>
                     </div>
                   </div>

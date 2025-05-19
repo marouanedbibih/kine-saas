@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
 import { Patient } from '../patient/patient.entity';
 
 @Entity('emergency_contacts')
@@ -18,8 +18,8 @@ export class EmergencyContact {
   @Column({ nullable: true })
   email: string;
 
-  @ManyToOne(() => Patient, (patient) => patient.emergencyContact, {
-    onDelete: 'SET NULL',
+  @OneToOne(() => Patient, (patient) => patient.emergencyContact, {
+    onDelete: 'CASCADE',
   })
   patient: Patient;
 }

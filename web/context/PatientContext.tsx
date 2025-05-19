@@ -35,8 +35,6 @@ interface PatientContextProps {
   // CRUD operations
   fetchPatients: () => Promise<PaginatedPatientsResponse | void>;
   getPatient: (id: string) => Promise<PatientResponseDto>;
-  createPatient: (patientData: CreatePatientDto) => Promise<void>;
-  updatePatient: (id: string, patientData: UpdatePatientDto) => Promise<PatientResponseDto>;
   deletePatient: (id: string) => Promise<void>;
   
   // File operations
@@ -50,6 +48,7 @@ interface PatientContextProps {
   refreshPatients: () => Promise<void>;
   handleFetchPatientDetail: (patientId: string) => Promise<void>;
   handleChangeInput: (field: string, value: any) => void;
+  resetRequestPatient: () => void;
 }
 
 const defaultFilters: QueryPatientsDto = {
@@ -114,8 +113,6 @@ export const PatientContext = createContext<PatientContextProps>({
   // CRUD operations
   fetchPatients: async () => { throw new Error('PatientContext not initialized') },
   getPatient: async () => { throw new Error('PatientContext not initialized') },
-  createPatient: async () => { throw new Error('PatientContext not initialized') },
-  updatePatient: async () => { throw new Error('PatientContext not initialized') },
   deletePatient: async () => { throw new Error('PatientContext not initialized') },
   
   // File operations
@@ -129,6 +126,7 @@ export const PatientContext = createContext<PatientContextProps>({
   refreshPatients: async () => { throw new Error('PatientContext not initialized') },
   handleFetchPatientDetail: async () => { throw new Error('PatientContext not initialized') },
   handleChangeInput: () => {},
+  resetRequestPatient: () => {},
 });
 
 export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -207,102 +205,6 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
     }
   };
 
-  // Create a new patient
-  const createPatient = async (patientData: CreatePatientDto): Promise<void> => {
-    console.log("Creating patient with data:", patientData);
-
-    setLoading((prev) => ({ ...prev, submit: true }));
-    clearErrors();
-    PatientService.createPatient(patientData)
-      .then((newPatient) => {
-        console.log("Patient created successfully:", newPatient);
-        alertService.success("Patient created successfully");
-
-        router.push("/patients");
-      })
-      .catch((err: any) => {
-        const errorMsg = err.response?.data?.message || err.message || 'Failed to create patient';
-        setError(errorMsg);
-        alertService.error(errorMsg);
-        throw err;
-      })
-      .finally(() => {
-        setLoading((prev) => ({ ...prev, submit: false }));
-      })
-      .catch((err: any) => {
-        const errorMsg = err.response?.data?.message || err.message || 'Failed to create patient';
-        setError(errorMsg);
-        toast({
-          title: "Error",
-          description: errorMsg,
-          variant: "destructive",
-        });
-        throw err;
-      })
-
-    // setLoading((prev) => ({ ...prev, submit: true }));
-    // clearErrors();
-    // try {
-    //   const newPatient = await PatientService.createPatient(patientData);
-    //   toast({
-    //     title: "Success",
-    //     description: "Patient created successfully",
-    //   });
-    //   // Refresh patient list if we're on the first page
-    //   if (filters.page === 1) {
-    //     await fetchPatients();
-    //   }
-    //   return newPatient;
-    // } catch (err: any) {
-    //   const errorMsg = err.response?.data?.message || err.message || 'Failed to create patient';
-    //   setError(errorMsg);
-    //   toast({
-    //     title: "Error",
-    //     description: errorMsg,
-    //     variant: "destructive",
-    //   });
-    //   throw err;
-    // } finally {
-    //   setLoading((prev) => ({ ...prev, submit: false }));
-    // }
-  };
-
-  // Update an existing patient
-  const updatePatient = async (id: string, patientData: UpdatePatientDto): Promise<PatientResponseDto> => {
-    setLoading((prev) => ({ ...prev, submit: true }));
-    clearErrors();
-    try {
-      const updatedPatient = await PatientService.updatePatient(id, patientData);
-      
-      // Update the selected patient if it's the one being edited
-      if (selectedPatient?.id === id) {
-        setSelectedPatient(updatedPatient);
-      }
-      
-      // Update patient in the list if it exists there
-      setPatients(currentPatients => 
-        currentPatients.map(p => p.id === id ? updatedPatient : p)
-      );
-      
-      toast({
-        title: "Success",
-        description: "Patient updated successfully",
-      });
-      
-      return updatedPatient;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.message || err.message || `Failed to update patient ${id}`;
-      setError(errorMsg);
-      toast({
-        title: "Error",
-        description: errorMsg,
-        variant: "destructive",
-      });
-      throw err;
-    } finally {
-      setLoading((prev) => ({ ...prev, submit: false }));
-    }
-  };
 
   // Delete a patient
   const deletePatient = async (id: string): Promise<void> => {
@@ -514,6 +416,11 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
     });
   };
 
+  // Reset requestPatient to default values
+  const resetRequestPatient = () => {
+    setRequestPatient(defaultPatientRequest);
+  };
+
   // Fetch patients when filters change
   useEffect(() => {
     fetchPatients();
@@ -537,8 +444,6 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
     // CRUD operations
     fetchPatients,
     getPatient,
-    createPatient,
-    updatePatient,
     deletePatient,
     
     // File operations
@@ -552,6 +457,7 @@ export const PatientProvider: React.FC<{ children: ReactNode }> = ({ children })
     refreshPatients,
     handleFetchPatientDetail,
     handleChangeInput,
+    resetRequestPatient,
   };
 
   return <PatientContext.Provider value={contextValue}>{children}</PatientContext.Provider>;
