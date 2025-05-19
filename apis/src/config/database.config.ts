@@ -35,7 +35,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
     ],
     migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
     synchronize: true,
-    dropSchema: true,
+    // dropSchema: true,
     logging:
       process.env.DB_LOGGING === 'true' ||
       process.env.NODE_ENV === 'development',

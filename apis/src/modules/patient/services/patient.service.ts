@@ -183,6 +183,11 @@ export class PatientService {
 
   async remove(id: string, currentUser: User): Promise<void> {
     const patient = await this.findOne(id, currentUser);
+    if (patient.kinesitherapeute.id !== currentUser.id) {
+      throw new ForbiddenException(
+        `You don't have permission to delete this patient`,
+      );
+    }
     await this.patientRepository.remove(patient);
   }
 }

@@ -140,7 +140,7 @@ export class PatientController {
   @ApiOperation({ summary: 'Delete patient by ID' })
   @ApiResponse({ status: 200, description: 'Patient deleted successfully' })
   @ApiResponse({ status: 404, description: 'Patient not found' })
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() user: User,

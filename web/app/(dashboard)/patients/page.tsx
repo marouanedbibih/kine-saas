@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
+import { useDeletePatient } from "@/hooks/useDeletePatient";
 import { usePatientsList } from "@/hooks/usePatients";
 import { Gender } from "@/types/patient";
 import { format } from "date-fns";
@@ -39,6 +40,9 @@ export default function PatientsPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [patientToDelete, setPatientToDelete] = useState<string | null>(null);
   const [activeFilterCount, setActiveFilterCount] = useState(0);
+  const {
+    handleDeletePatient,
+  } = useDeletePatient();
 
   // Gender filter
   const [genderFilter, setGenderFilter] = useState<Gender[]>([]);
@@ -133,27 +137,6 @@ export default function PatientsPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  // Handle delete patient
-  const handleDeletePatient = async () => {
-    if (!patientToDelete) return;
-
-    try {
-      await deletePatient(patientToDelete);
-      toast({
-        title: "Success",
-        description: "Patient deleted successfully",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete patient",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleteDialogOpen(false);
-      setPatientToDelete(null);
-    }
-  };
 
   // Calculate age from date of birth
   const calculateAge = (dateOfBirth: string | null): number => {
@@ -517,7 +500,7 @@ export default function PatientsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeletePatient}
+              onClick={() => handleDeletePatient(patientToDelete!)}
               className="bg-destructive hover:bg-destructive/90"
             >
               Delete
