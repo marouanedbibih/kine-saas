@@ -12,7 +12,7 @@ import { CreatePatientDto } from '../dto/create-patient.dto';
 // import { MedicalRecordService } from '../../medical-record/services/medical-record.service';
 // import { InsuranceInfoService } from '../../insurance-info/services/insurance-info.service';
 // import { EmergencyContactService } from '../../emergency-contact/services/emergency-contact.service';
-import { Patient } from '../patient.entity';
+import { Patient } from '../entities/patient.entity';
 import { User, UserRole } from '@/modules/users/entities/user.entity';
 import { EmergencyContact } from '@/modules/emergency-contact/emergency-contact.entity';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
