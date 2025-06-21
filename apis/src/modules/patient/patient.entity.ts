@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 // src/modules/patient/entities/patient.entity.ts
 import { ConsentDocument } from '../documents/consent-document.entity';
 import { EmergencyContact } from '../emergency-contact/emergency-contact.entity';
@@ -15,8 +13,8 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { MedicalRecord } from '../medical-record/medical-record.entity';
 import { User } from '../users/entities/user.entity';
+import { MedicalInfo } from '../medical-info/medical-info.entity';
 
 // Gender enum for patient
 export enum Gender {
@@ -110,11 +108,6 @@ export class Patient {
   @JoinColumn({ name: 'kinesitherapeute_id' })
   kinesitherapeute: User;
 
-  @OneToOne(() => MedicalRecord, (medicalRecord) => medicalRecord.patient, {
-    cascade: true,
-  })
-  medicalRecord: MedicalRecord;
-
   @OneToOne(() => InsuranceInfo, (insuranceInfo) => insuranceInfo.patient, {
     cascade: true,
   })
@@ -141,4 +134,10 @@ export class Patient {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  // Relation to the MedicalInfo entity
+  @OneToOne(() => MedicalInfo, (medicalInfo) => medicalInfo.patient, {
+    cascade: true,
+  })
+  medicalInfo: MedicalInfo;
 }

@@ -2,7 +2,7 @@
 import { ConsentDocument } from '@/modules/documents/consent-document.entity';
 import { EmergencyContact } from '@/modules/emergency-contact/emergency-contact.entity';
 import { InsuranceInfo } from '@/modules/insurance-info/insurance-info.entity';
-import { MedicalRecord } from '@/modules/medical-record/medical-record.entity';
+import { MedicalInfo } from '@/modules/medical-info/medical-info.entity';
 import { Patient } from '@/modules/patient/patient.entity';
 import { User } from '@/modules/users/entities/user.entity';
 import { registerAs } from '@nestjs/config';
@@ -30,7 +30,7 @@ export default registerAs('database', (): TypeOrmModuleOptions => {
       ConsentDocument,
       EmergencyContact,
       InsuranceInfo,
-      MedicalRecord,
+      MedicalInfo,
       // Kinesitherapeute,
     ],
     migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],

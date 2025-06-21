@@ -18,13 +18,6 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiQuery,
-} from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../common/guards/roles.guard';
 import { Roles } from '../../../common/decorators/roles.decorator';
@@ -40,20 +33,12 @@ import { User } from '@/modules/users/entities/user.entity';
 import { Patient } from '../patient.entity';
 // import { use } from 'react';
 
-@ApiTags('patients')
-@ApiBearerAuth()
 @Controller('/api/patients')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new patient' })
-  @ApiResponse({
-    status: 201,
-    description: 'Patient created successfully',
-    type: PatientResponseDto,
-  })
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async create(
     @Body() createPatientDto: CreatePatientDto,
@@ -63,15 +48,6 @@ export class PatientController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Get all patients with optional filtering' })
-  @ApiResponse({
-    status: 200,
-    description: 'Return all patients',
-    type: [PatientResponseDto],
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'limit', required: false, type: Number })
-  @ApiQuery({ name: 'search', required: false, type: String })
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async findAll(
     @CurrentUser() user: User,
@@ -98,13 +74,6 @@ export class PatientController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Get patient by ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Return patient details',
-    type: PatientResponseDto,
-  })
-  @ApiResponse({ status: 404, description: 'Patient not found' })
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
@@ -115,13 +84,6 @@ export class PatientController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update patient by ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Patient updated successfully',
-    type: PatientResponseDto,
-  })
-  @ApiResponse({ status: 404, description: 'Patient not found' })
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
@@ -137,9 +99,6 @@ export class PatientController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Delete patient by ID' })
-  @ApiResponse({ status: 200, description: 'Patient deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Patient not found' })
   @Roles(UserRole.ADMIN, UserRole.KINESITHERAPEUTE)
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
@@ -150,7 +109,6 @@ export class PatientController {
   }
 
   @Post(':id/photo')
-  @ApiOperation({ summary: 'Upload patient profile photo' })
   @UseInterceptors(
     FileInterceptor('photo', {
       storage: diskStorage({

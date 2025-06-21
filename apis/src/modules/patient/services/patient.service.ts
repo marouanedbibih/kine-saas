@@ -16,6 +16,7 @@ import { Patient } from '../patient.entity';
 import { User, UserRole } from '@/modules/users/entities/user.entity';
 import { EmergencyContact } from '@/modules/emergency-contact/emergency-contact.entity';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
+import { MedicalInfo } from '@/modules/medical-info/medical-info.entity';
 @Injectable()
 export class PatientService {
   [x: string]: any;
@@ -26,16 +27,15 @@ export class PatientService {
     private userRepository: Repository<User>,
     @InjectRepository(EmergencyContact)
     private emergencyContactRepository: Repository<EmergencyContact>,
-    // private medicalRecordService: MedicalRecordService,
-    // private insuranceInfoService: InsuranceInfoService,
-    // private emergencyContactService: EmergencyContactService,
+    @InjectRepository(MedicalInfo)
+    private medicalInfoRepository: Repository<MedicalInfo>,
   ) {}
 
   async create(
     createPatientDto: CreatePatientDto,
     currentUser: User,
   ): Promise<Patient> {
-    const { emergencyContact, ...patientData } = createPatientDto;
+    const { emergencyContact, medicalInfo, ...patientData } = createPatientDto;
 
     let savedEmergencyContact: EmergencyContact | undefined = undefined;
     if (emergencyContact) {
@@ -47,10 +47,20 @@ export class PatientService {
       );
     }
 
+    let savedMedicalInfo: MedicalInfo | undefined = undefined;
+    if (medicalInfo) {
+      const medicalInfoEntity = this.medicalInfoRepository.create({
+        ...medicalInfo,
+      });
+      savedMedicalInfo =
+        await this.medicalInfoRepository.save(medicalInfoEntity);
+    }
+
     const patient = this.patientRepository.create({
       ...patientData,
       kinesitherapeute: currentUser,
       emergencyContact: savedEmergencyContact,
+      medicalInfo: savedMedicalInfo,
     });
 
     const savedPatient = await this.patientRepository.save(patient);
@@ -59,7 +69,7 @@ export class PatientService {
     const patientWithRelations = await this.patientRepository.findOne({
       where: { id: savedPatient.id },
       relations: [
-        'medicalRecord',
+        'medicalInfo',
         'insuranceInfo',
         'emergencyContact',
         'consentDocuments',
