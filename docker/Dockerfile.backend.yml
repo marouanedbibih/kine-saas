@@ -1,0 +1,49 @@
+# Stage 1: Build the application
+FROM eclipse-temurin:21-jdk-alpine AS build 
+
+VOLUME /tmp
+
+WORKDIR /app
+
+COPY backend/mvnw .
+COPY backend/.mvn .mvn
+COPY backend/pom.xml .
+COPY backend/src src
+
+RUN ./mvnw install -DskipTests
+
+# Stage 2: Create the development image
+FROM eclipse-temurin:21-jdk-alpine AS dev
+
+WORKDIR /app
+
+ARG SPRING_PROFILES_ACTIVE=dev
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+
+# Database configuration
+ARG DB_HOST
+ENV DB_HOST=${DB_HOST}
+ARG DB_PORT
+ENV DB_PORT=${DB_PORT}
+ARG DB_NAME
+ENV DB_NAME=${DB_NAME}
+ARG DB_USERNAME
+ENV DB_USERNAME=${DB_USERNAME}
+ARG DB_PASSWORD
+ENV DB_PASSWORD=${DB_PASSWORD}
+
+# JWT configuration
+ARG JWT_SECRET
+ENV JWT_SECRET=${JWT_SECRET}
+ARG JWT_ISSUER
+ENV JWT_ISSUER=${JWT_ISSUER}
+ARG JWT_ACCESS_EXPIRATION
+ENV JWT_ACCESS_EXPIRATION=${JWT_ACCESS_EXPIRATION}
+ARG JWT_REFRESH_EXPIRATION
+ENV JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
+
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

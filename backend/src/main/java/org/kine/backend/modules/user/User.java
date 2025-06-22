@@ -1,6 +1,9 @@
 package org.kine.backend.modules.user;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +19,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
 
+/**
+ * Base User entity implementing Spring Security UserDetails
+ * Serves as the parent class for all user types in the system
+ */
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -31,13 +38,17 @@ public abstract class User implements UserDetails {
     private UUID id;
 
     @Column(unique = true, nullable = false)
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email must be valid")
     private String email;
 
     @Column(nullable = false)
+    @NotBlank(message = "Password is required")
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @NotNull(message = "User role is required")
     private UserRole role;
     
     @Column(nullable = false)
@@ -52,16 +63,35 @@ public abstract class User implements UserDetails {
     @Column(nullable = false)
     private boolean enabled = true;
 
-    public boolean authenticate(String password) {
-        // In a real application, you would use a password encoder
-        return this.password.equals(password);
-    }
-
+    /**
+     * Check if user has a specific role
+     * 
+     * @param role the role to check
+     * @return true if user has the role, false otherwise
+     */
     public boolean hasRole(UserRole role) {
         return this.role == role;
     }
     
-    // UserDetails implementation methods
+    /**
+     * Check if user is an admin
+     * 
+     * @return true if user is admin, false otherwise
+     */
+    public boolean isAdmin() {
+        return this.role == UserRole.ADMIN;
+    }
+    
+    /**
+     * Check if user is a therapist
+     * 
+     * @return true if user is therapist, false otherwise
+     */
+    public boolean isTherapist() {
+        return this.role == UserRole.THERAPIST;
+    }
+    
+    // Spring Security UserDetails implementation methods
     
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
