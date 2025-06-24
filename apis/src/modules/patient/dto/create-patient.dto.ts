@@ -43,6 +43,7 @@ import {
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { CreateEmergencyContactDto } from 'src/modules/emergency-contact/dto/create-emergency-contact.dto';
+import { CreateMedicalInfoDto } from '@/modules/medical-info/http/create-medical-infos.dto';
 
 // Enums for validation
 export enum Gender {
@@ -161,4 +162,10 @@ export class CreatePatientDto {
   @ValidateNested({ each: true })
   @Type(() => CreateEmergencyContactDto)
   emergencyContact?: CreateEmergencyContactDto;
+
+  @ApiProperty({ type: CreateMedicalInfoDto, required: false })
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateMedicalInfoDto)
+  medicalInfo?: CreateMedicalInfoDto;
 }

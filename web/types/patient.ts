@@ -1,255 +1,128 @@
-import { IPaginationMeta } from ".";
+/**
+ * Represents a patient in the system
+ */
+export interface Patient {
+  id: string;
+  firstName: string;
+  middleName?: string | null;
+  lastName: string;
+  fullName?: string | null;
+  dateOfBirth: string;
+  gender: Gender;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  phone: string;
+  altPhone?: string | null;
+  email: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactEmail?: string | null;
+  emergencyContactRelation: string;
+  profilePhotoUrl?: string | null;
+  cabinet: Cabinet;
+}
 
+/**
+ * Patient gender options
+ */
 export enum Gender {
-  MALE = 'male',
-  FEMALE = 'female',
-  OTHER = 'other',
-  PREFER_NOT_TO_SAY = 'prefer-not-to-say'
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  OTHER = 'OTHER',
+  NOT_SPECIFIED = 'NOT_SPECIFIED',
 }
 
-export enum MaritalStatus {
-  SINGLE = 'single',
-  MARRIED = 'married',
-  DIVORCED = 'divorced',
-  WIDOWED = 'widowed',
-  SEPARATED = 'separated',
+/**
+ * Represents a medical cabinet/clinic
+ */
+export interface Cabinet {
+  id: string;
+  name: string;
 }
 
-export enum BloodType {
-  A_POSITIVE = 'a_positive',
-  A_NEGATIVE = 'a_negative',
-  B_POSITIVE = 'b_positive',
-  B_NEGATIVE = 'b_negative',
-  AB_POSITIVE = 'ab_positive',
-  AB_NEGATIVE = 'ab_negative',
-  O_POSITIVE = 'o_positive',
-  O_NEGATIVE = 'o_negative',
-  UNKNOWN = 'unknown',
-}
-
-export enum PreferredContact {
-  PHONE = 'phone',
-  EMAIL = 'email',
-  SMS = 'sms',
-}
-
-export interface CreatePatientDto {
+/**
+ * Patient request object for creating/updating patients
+ */
+export interface PatientRequest {
   firstName: string;
-  middleName?: string;
+  middleName?: string | null;
   lastName: string;
-  email: string;
-  phoneNumber: string;
-  alternativePhoneNumber?: string;
-  preferredContact?: PreferredContact;
+  dateOfBirth: string;
   gender: Gender;
-  dateOfBirth: string; // 'YYYY-MM-DD'
-  maritalStatus?: MaritalStatus;
-  address?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  kinesitherapeuteId?: string;
-  emergencyContact?: {
-    id?: string;
-    name: string;
-    relationship: string;
-    phoneNumber: string;
-    email?: string;
-  };
-  medicalRecord?: {
-    bloodType?: BloodType;
-    height?: number; // in cm
-    weight?: number; // in kg
-    allergies?: string;
-    chronicConditions?: string;
-    currentMedications?: string;
-    smokingStatus?: string;
-    alcoholConsumption?: string;
-    exerciseFrequency?: string;
-  };
-  insuranceInfo?: {
-    provider: string;
-    policyNumber: string;
-    groupNumber?: string;
-    primaryInsuredName: string;
-    relationship?: string;
-    validUntil?: string;
-    insurancePhone?: string;
-    secondaryProvider?: string;
-    secondaryPolicyNumber?: string;
-    secondaryGroupNumber?: string;
-  };
-}
-
-export interface UpdatePatientDto {
-  firstName?: string;
-  middleName?: string;
-  lastName?: string;
-  email?: string;
-  phoneNumber?: string;
-  alternativePhoneNumber?: string;
-  preferredContact?: PreferredContact;
-  gender?: Gender;
-  dateOfBirth?: string; // 'YYYY-MM-DD'
-  maritalStatus?: MaritalStatus;
-  address?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  kinesitherapeuteId?: string;
-  emergencyContact?: {
-    id?: string;
-    name: string;
-    relationship: string;
-    phoneNumber: string;
-    email?: string;
-  };
-  medicalRecord?: {
-    bloodType?: BloodType;
-    height?: number;
-    weight?: number;
-    allergies?: string;
-    chronicConditions?: string;
-    currentMedications?: string;
-    smokingStatus?: string;
-    alcoholConsumption?: string;
-    exerciseFrequency?: string;
-  };
-  insuranceInfo?: {
-    provider?: string;
-    policyNumber?: string;
-    groupNumber?: string;
-    primaryInsuredName?: string;
-    relationship?: string;
-    validUntil?: string;
-    insurancePhone?: string;
-    secondaryProvider?: string;
-    secondaryPolicyNumber?: string;
-    secondaryGroupNumber?: string;
-  };
-}
-
-export interface KineInfo {
-  id: string;
-  licenseNumber: string;
-  firstName: string;
-  lastName: string;
-}
-
-// export interface PatientResponseDto {
-//   id: string;
-//   numeroPatient: string;
-//   firstName: string;
-//   lastName: string;
-//   telephone: string;
-//   adresse: string;
-//   dateNaissance: string | null; // ISO string
-//   contactUrgence: string;
-//   kinesitherapeute: KineInfo | null;
-//   createdAt: string;
-//   updatedAt: string;
-// }
-
-export interface QueryPatientsDto {
-  page?: number;
-  limit?: number;
-  search?: string;
-  kinesitherapeuteId?: string;
-}
-
-export interface PaginatedPatientsResponse {
-  data: PatientResponseDto[];
-  total: number;
-  page: number;
-  limit: number;
-}
-
-
-export interface KineInfo {
-  id: string;
-  licenseNumber: string;
-  firstName: string;
-  lastName: string;
-}
-
-export interface PatientResponseDto {
-  id: string;
-  numeroPatient?: string;
-  firstName: string;
-  middleName?: string;
-  lastName: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  phone: string;
+  altPhone?: string | null;
   email: string;
-  phoneNumber: string;
-  alternativePhoneNumber?: string;
-  preferredContact?: PreferredContact;
-  gender: Gender;
-  dateOfBirth: string | null; // Format: 'YYYY-MM-DD'
-  maritalStatus?: MaritalStatus;
-  address?: string;
-  city?: string;
-  state?: string;
-  zipCode?: string;
-  profilePhotoUrl?: string;
-  active: boolean;
-  kinesitherapeute: KineInfo | null;
-  createdByUserId: string;
-  createdAt: string; // ISO date string
-  updatedAt: string; // ISO date string
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  emergencyContactEmail?: string | null;
+  emergencyContactRelation: string;
+  profilePhotoUrl?: string | null;
+  cabinetId: string;
+}
+
+/**
+ * Maps a Patient to a PatientRequest for editing
+ * @param patient The patient data to convert to a request
+ * @returns A PatientRequest object
+ */
+export function patientToRequest(patient: Patient): PatientRequest {
+  return {
+    firstName: patient.firstName,
+    middleName: patient.middleName,
+    lastName: patient.lastName,
+    dateOfBirth: patient.dateOfBirth,
+    gender: patient.gender,
+    address: patient.address,
+    city: patient.city,
+    state: patient.state,
+    zipCode: patient.zipCode,
+    phone: patient.phone,
+    altPhone: patient.altPhone,
+    email: patient.email,
+    emergencyContactName: patient.emergencyContactName,
+    emergencyContactPhone: patient.emergencyContactPhone,
+    emergencyContactEmail: patient.emergencyContactEmail,
+    emergencyContactRelation: patient.emergencyContactRelation,
+    profilePhotoUrl: patient.profilePhotoUrl,
+    cabinetId: patient.cabinet.id
+  };
+}
+
+/**
+ * Formats patient name consistently
+ * @param patient The patient
+ * @returns Formatted full name
+ */
+export function formatPatientName(patient: Patient): string {
+  if (patient.fullName) {
+    return patient.fullName;
+  }
   
-  // Nested related entities
-  medicalRecord?: {
-    id: string;
-    bloodType?: BloodType;
-    height?: number; // in cm
-    weight?: number; // in kg
-    allergies?: string;
-    medicalHistory?: string;
-    chronicConditions?: string;
-    currentMedications?: string;
-    previousTreatments?: string;
-    diagnosisNotes?: string;
-    treatmentPlan?: string;
-    smokingStatus?: string;
-    alcoholConsumption?: string;
-    exerciseFrequency?: string;
-    dietaryHabits?: string;
-  };
-
-  insuranceInfo?: {
-    id: string;
-    provider: string;
-    policyNumber: string;
-    groupNumber?: string;
-    primaryInsuredName: string;
-    relationship?: string;
-    coverageDetails?: string;
-    validUntil?: string;
-    insurancePhone?: string;
-    secondaryProvider?: string;
-    secondaryPolicyNumber?: string;
-    secondaryGroupNumber?: string;
-  };
-
-  emergencyContact?: {
-    id?: string;
-    name: string;
-    relationship: string;
-    phoneNumber: string;
-    email?: string;
-  };
-
-  consentDocuments?: Array<{
-    id: string;
-    documentType: string;
-    documentUrl: string;
-    uploadDate: string;
-    notes?: string;
-  }>;
+  return patient.middleName 
+    ? `${patient.lastName} ${patient.firstName} ${patient.middleName}`
+    : `${patient.lastName} ${patient.firstName}`;
 }
 
-
-
-export interface PaginatedPatientsResponse {
-  data: PatientResponseDto[];
-  meta: IPaginationMeta;
+/**
+ * Calculate patient age from date of birth
+ * @param patient The patient
+ * @returns Age in years
+ */
+export function calculateAge(patient: Patient): number {
+  const birthDate = new Date(patient.dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDifference = today.getMonth() - birthDate.getMonth();
+  
+  if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
 }

@@ -505,24 +505,11 @@
         },
         "responses": {
           "201": {
-            "description": "Patient created successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientResponseDto"
-                }
-              }
-            }
+            "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Create a new patient",
         "tags": [
-          "patients"
+          "Patient"
         ]
       },
       "get": {
@@ -530,7 +517,7 @@
         "parameters": [
           {
             "name": "page",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "number"
@@ -538,7 +525,7 @@
           },
           {
             "name": "limit",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "number"
@@ -546,7 +533,7 @@
           },
           {
             "name": "search",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
               "type": "string"
@@ -555,27 +542,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Return all patients",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/PatientResponseDto"
-                  }
-                }
-              }
-            }
+            "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get all patients with optional filtering",
         "tags": [
-          "patients"
+          "Patient"
         ]
       }
     },
@@ -594,27 +565,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Return patient details",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Patient not found"
+            "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Get patient by ID",
         "tags": [
-          "patients"
+          "Patient"
         ]
       },
       "patch": {
@@ -641,27 +596,11 @@
         },
         "responses": {
           "200": {
-            "description": "Patient updated successfully",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PatientResponseDto"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Patient not found"
+            "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Update patient by ID",
         "tags": [
-          "patients"
+          "Patient"
         ]
       },
       "delete": {
@@ -678,20 +617,11 @@
         ],
         "responses": {
           "200": {
-            "description": "Patient deleted successfully"
-          },
-          "404": {
-            "description": "Patient not found"
+            "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Delete patient by ID",
         "tags": [
-          "patients"
+          "Patient"
         ]
       }
     },
@@ -713,14 +643,8 @@
             "description": ""
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "summary": "Upload patient profile photo",
         "tags": [
-          "patients"
+          "Patient"
         ]
       }
     }
@@ -1023,6 +947,10 @@
           "phoneNumber"
         ]
       },
+      "CreateMedicalInfoDto": {
+        "type": "object",
+        "properties": {}
+      },
       "CreatePatientDto": {
         "type": "object",
         "properties": {
@@ -1088,6 +1016,9 @@
           },
           "emergencyContact": {
             "$ref": "#/components/schemas/CreateEmergencyContactDto"
+          },
+          "medicalInfo": {
+            "$ref": "#/components/schemas/CreateMedicalInfoDto"
           }
         },
         "required": [
@@ -1096,166 +1027,6 @@
           "email",
           "dateOfBirth",
           "gender"
-        ]
-      },
-      "MedicalRecordResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "medicalHistory": {
-            "type": "string"
-          },
-          "allergies": {
-            "type": "string"
-          },
-          "currentMedications": {
-            "type": "string"
-          },
-          "previousTreatments": {
-            "type": "string"
-          },
-          "diagnosisNotes": {
-            "type": "string"
-          },
-          "treatmentPlan": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ]
-      },
-      "InsuranceInfoResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "provider": {
-            "type": "string"
-          },
-          "policyNumber": {
-            "type": "string"
-          },
-          "groupNumber": {
-            "type": "string"
-          },
-          "primaryInsuredName": {
-            "type": "string"
-          },
-          "relationship": {
-            "type": "string"
-          },
-          "coverageDetails": {
-            "type": "string"
-          },
-          "validUntil": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "provider",
-          "policyNumber",
-          "primaryInsuredName"
-        ]
-      },
-      "EmergencyContactResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "relationship": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "relationship",
-          "phoneNumber"
-        ]
-      },
-      "PatientResponseDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "dateOfBirth": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "gender": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
-          },
-          "address": {
-            "type": "string"
-          },
-          "profilePhotoUrl": {
-            "type": "string"
-          },
-          "medicalRecord": {
-            "$ref": "#/components/schemas/MedicalRecordResponseDto"
-          },
-          "insuranceInfo": {
-            "$ref": "#/components/schemas/InsuranceInfoResponseDto"
-          },
-          "emergencyContacts": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/EmergencyContactResponseDto"
-            }
-          },
-          "createdAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "firstName",
-          "lastName",
-          "email",
-          "dateOfBirth",
-          "gender",
-          "phoneNumber",
-          "address",
-          "profilePhotoUrl",
-          "medicalRecord",
-          "insuranceInfo",
-          "emergencyContacts",
-          "createdAt",
-          "updatedAt"
         ]
       },
       "UpdatePatientDto": {
@@ -1320,6 +1091,9 @@
           },
           "kinesitherapeuteId": {
             "type": "string"
+          },
+          "medicalInfo": {
+            "$ref": "#/components/schemas/CreateMedicalInfoDto"
           }
         }
       }

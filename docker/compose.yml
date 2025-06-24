@@ -1,10 +1,17 @@
+volumes:
+  postgres_data:
+   name: kine_postgres_data
+
+networks:
+  kine_network:
+    driver: bridge
 
 services:
   postgres:
     image: postgres:15
     container_name: kine-saas-postgres
     ports:
-      - "5433:5432"
+      - "5432:5432"
     restart: always
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
@@ -28,7 +35,6 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_ROOT_PASSWORD: root
-      POSTGRES_PASSWORD: root
       POSTGRES_DB: kine_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -36,10 +42,3 @@ services:
     networks:
       - kine_network
 
-volumes:
-  postgres_data:
-   name: kine_postgres_data
-
-networks:
-  kine_network:
-    driver: bridge

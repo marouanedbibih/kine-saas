@@ -2,21 +2,18 @@ import { Module } from '@nestjs/common';
 import { PatientController } from './controllers/patient.controller';
 import { PatientService } from './services/patient.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Patient } from './patient.entity';
+import { Patient } from './entities/patient.entity';
 import { UsersModule } from '../users/users.module';
 import { User } from '../users/entities/user.entity';
 import { EmergencyContact } from '../emergency-contact/emergency-contact.entity';
-// import { MedicalRecordModule } from '../medical-record/medical-record.module';
-// import { InsuranceInfoModule } from '../insurance-info/insurance-info.module';
-// import { EmergencyContactModule } from '../emergency-contact/emergency-contact.module';
+import { MedicalInfoModule } from '../medical-info/medical-info.module';
+import { MedicalInfo } from '../medical-info/medical-info.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Patient, User, EmergencyContact]),
+    TypeOrmModule.forFeature([Patient, User, EmergencyContact, MedicalInfo]),
     UsersModule,
-    // MedicalRecordModule,
-    // InsuranceInfoModule,
-    // EmergencyContactModule,
+    MedicalInfoModule,
   ],
   controllers: [PatientController],
   providers: [PatientService],

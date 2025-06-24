@@ -1,9 +1,10 @@
-import { authService } from "@/services/auth.services";
 import { AuthRequest } from "../types/auth";
 import { useState } from "react";
 import { jwtService } from "@/services/jwt.services";
 import { useRouter } from "next/navigation";
 import { alertService } from "@/services/alert.services";
+import { authService } from "@/modules/auth/services/auth.services";
+import { LoginResponse } from "@/modules/auth/types/login";
 
 export const useAuthHooks = () => {
   const [loginRequest, setLoginRequest] = useState<AuthRequest>({
@@ -19,14 +20,16 @@ export const useAuthHooks = () => {
 
     authService
       .login(loginRequest)
-      .then((response) => {
+      .then((response: LoginResponse) => {
         console.log("Connexion réussie", response);
-        jwtService.setToken(response.tokens.accessToken);
+        jwtService.setToken(response.accessToken);
 
-        const role = response.user.role;
+        const role = jwtService.decodeToken(response.accessToken).role;
+        console.log("Rôle de l'utilisateur :", role);
+        const email = jwtService.decodeToken(response.accessToken).email;
         if (role === "ADMIN") {
           router.push("/");
-        } else if (role === "KINESITHERAPEUTE") {
+        } else if (role === "THERAPIST") {
           router.push("/doctor-dashboard");
         }
         else {
@@ -35,7 +38,7 @@ export const useAuthHooks = () => {
         
         alertService.success("Connexion réussie", {
           duration: 4000,
-          description: `Bienvenue, ${response.user.email} !`,
+          description: `Bienvenue, ${email} !`,
         });
       })
       .catch((error) => {

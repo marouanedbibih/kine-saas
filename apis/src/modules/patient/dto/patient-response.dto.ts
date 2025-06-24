@@ -1,5 +1,4 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-import { MedicalRecordResponseDto } from '../../medical-record/dto/medical-record-response.dto';
 import { InsuranceInfoResponseDto } from '../../insurance-info/dto/insurance-info-response.dto';
 import { EmergencyContactResponseDto } from '../../emergency-contact/dto/emergency-contact-response.dto';
 import { ApiProperty } from '@nestjs/swagger';
@@ -40,11 +39,6 @@ export class PatientResponseDto {
   @ApiProperty()
   @Expose()
   profilePhotoUrl: string;
-
-  @ApiProperty()
-  @Expose()
-  @Type(() => MedicalRecordResponseDto)
-  medicalRecord: MedicalRecordResponseDto;
 
   @ApiProperty()
   @Expose()

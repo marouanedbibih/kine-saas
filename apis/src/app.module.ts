@@ -16,7 +16,6 @@ import { PatientModule } from './modules/patient/patient.module';
 import { EmergencyContactModule } from './modules/emergency-contact/emergency-contact.module';
 // import { DocumentsModule } from './modules/documents/documents.module';
 import { InsuranceInfoModule } from './modules/insurance-info/insurance-info.module';
-import { MedicalRecordModule } from './modules/medical-record/medical-record.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
@@ -49,7 +48,6 @@ import { UsersModule } from './modules/users/users.module';
     EmergencyContactModule,
     // DocumentsModule,
     InsuranceInfoModule,
-    MedicalRecordModule,
   ],
   providers: [
     // Apply guards globally

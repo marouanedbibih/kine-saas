@@ -1,36 +1,31 @@
-networks:
-  kine_network:
-    driver: bridge
-    
-
 services:
-  api:
-    container_name: kine-api
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile.api.yml
-      target: development
-    ports:
-      - "3001:3001"
-    restart: always
-    environment:
-      NODE_ENV: ${NODE_ENV}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
-      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN}
-      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
-    command: npm run seed
-    depends_on:
-      - postgres
-    networks:
-      - kine_network
+  # api:
+  #   container_name: kine-api
+  #   build:
+  #     context: ..
+  #     dockerfile: docker/Dockerfile.api.yml
+  #     target: development
+  #   ports:
+  #     - "3001:3001"
+  #   environment:
+  #     NODE_ENV: ${NODE_ENV}
+  #     DB_HOST: ${DB_HOST}
+  #     DB_PORT: ${DB_PORT}
+  #     DB_USERNAME: ${DB_USERNAME}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     DB_NAME: ${DB_NAME}
+  #     JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+  #     JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+  #     JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN}
+  #     JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN}
+  #   command: sh -c "npm run seed && npm run start:dev"
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - kine_network
   web:
     container_name: kine-web
+    image: marouanedbibih/kine-saas-web:dev-0.1.0
     build:
       context: ..
       dockerfile: docker/Dockerfile.web.yml
@@ -38,13 +33,43 @@ services:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     ports:
       - "3000:3000"
-    restart: always
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
     working_dir: /app
     command: pnpm dev
     depends_on:
-      - api
+      - backend
+    networks:
+      - kine_network
 
+  backend:
+    container_name: kine-backend
+    image: marouanedbibih/kine-saas-backend:dev-0.1.0
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend.yml
+      target: dev
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER}
+      JWT_ACCESS_EXPIRATION: ${JWT_ACCESS_EXPIRATION}
+      JWT_REFRESH_EXPIRATION: ${JWT_REFRESH_EXPIRATION}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      CORS_ALLOWED_METHODS: ${CORS_ALLOWED_METHODS}
+      CORS_ALLOWED_HEADERS: ${CORS_ALLOWED_HEADERS}
+      CORS_ALLOW_CREDENTIALS: ${CORS_ALLOW_CREDENTIALS}
+      CORS_MAX_AGE: ${CORS_MAX_AGE}
+    depends_on:
+      - postgres
+    networks:
+      - kine_network
 
 
