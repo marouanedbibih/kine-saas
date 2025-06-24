@@ -4,6 +4,7 @@ import org.kine.backend.security.AuthEntryPointJwt;
 import org.kine.backend.security.CustomAuthProvider;
 import org.kine.backend.security.CustomUserDetailsService;
 import org.kine.backend.security.JwtFilter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,6 +20,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,14 +31,18 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private static final String ADMIN = "ADMIN";
+    private static final String THERAPIST = "THERAPIST";
     private final CustomUserDetailsService customUserDetailsService;
     private final JwtFilter jwtFilter;
     private final AuthEntryPointJwt unauthorizedHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            @Qualifier("corsConfigurationSource") CorsConfigurationSource corsSource) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable);
 
+        http.cors(cors -> cors.configurationSource(corsSource));
+        
         http.authorizeHttpRequests(request -> request
                 // Public endpoints
                 .requestMatchers(HttpMethod.POST, "/api/v1/login").permitAll()
@@ -49,6 +55,12 @@ public class SecurityConfig {
                 // .requestMatchers(HttpMethod.GET, "/api/v1/user/{id}").hasAuthority(ADMIN)
                 // .requestMatchers(HttpMethod.GET, "/api/v1/users").hasAuthority(ADMIN)
                 // .requestMatchers(HttpMethod.DELETE, "/api/v1/user/{id}").hasAuthority(ADMIN)
+
+                .requestMatchers(HttpMethod.GET, "/api/v1/patients").hasAnyRole(ADMIN, THERAPIST)
+                .requestMatchers(HttpMethod.GET, "/api/v1/patients/{id}").hasAnyRole(ADMIN, THERAPIST)
+                .requestMatchers(HttpMethod.POST, "/api/v1/patients").hasAnyRole(ADMIN, THERAPIST)
+                .requestMatchers(HttpMethod.PUT, "/api/v1/patients/{id}").hasAnyRole(ADMIN, THERAPIST)
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/patients/{id}").hasAnyRole(ADMIN, THERAPIST)
 
                 // Other endpoints require authentication
                 .anyRequest().authenticated());

@@ -10,70 +10,149 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useDeletePatient } from "@/hooks/useDeletePatient";
-import { usePatientsList } from "@/hooks/usePatients";
-import { Gender } from "@/types/patient";
+import { Patient, Gender } from "@/types/patient";
+import { PageResponse } from "@/types/pageable";
+import { patientService, PatientQueryParams } from "@/services/patient.services";
 import { format } from "date-fns";
 import { Download, Edit, Filter, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function PatientsPage() {
   const { toast } = useToast();
-  const {
-    patients,
-    loading,
-    error,
-    filters,
-    setFilters,
-    pagination,
-    refreshPatients,
-    // deletePatient
-  } = usePatientsList();
-
-  const [searchTerm, setSearchTerm] = useState("");
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [selectedPatients, setSelectedPatients] = useState<string[]>([]);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [patientToDelete, setPatientToDelete] = useState<string | null>(null);
-  const [activeFilterCount, setActiveFilterCount] = useState(0);
-  const {
-    handleDeletePatient,
-  } = useDeletePatient();
+  const [activeFilterCount, setActiveFilterCount] = useState<number>(0);
 
-  // Gender filter
+  // Query parameters
+  const [queryParams, setQueryParams] = useState<PatientQueryParams>({
+    page: 1,
+    size: 10,
+    sortBy: "lastName",
+    sortDirection: "ASC"
+  });
+
+  // Filters
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [genderFilter, setGenderFilter] = useState<Gender[]>([]);
+  
+  // Pagination
+  const [pagination, setPagination] = useState<{
+    page: number;
+    totalPages: number;
+    totalElements: number;
+    size: number;
+  }>({
+    page: 1,
+    totalPages: 0,
+    totalElements: 0,
+    size: 10
+  });
+
+  // Fetch patients
+  const fetchPatients = useCallback(async () => {
+    setLoading(true);
+    try {
+      let response: PageResponse<Patient>;
+      
+      // Use search endpoint if there's a search term
+      if (searchTerm) {
+        response = await patientService.searchPatients(searchTerm, {
+          page: queryParams.page,
+          size: queryParams.size,
+          sortBy: queryParams.sortBy,
+          sortDirection: queryParams.sortDirection
+        });
+      } else {
+        response = await patientService.getPatients(queryParams);
+      }
+      
+      setPatients(response.content);
+      setPagination({
+        page: response.currentPage,
+        totalPages: response.totalPages,
+        totalElements: response.totalElements,
+        size: response.size
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error fetching patients",
+        description: error.message || "Something went wrong",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [queryParams, searchTerm, toast]);
+
+  // Initial load
+  useEffect(() => {
+    fetchPatients();
+  }, [fetchPatients]);
+
+  // Handle search
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setQueryParams(prev => ({
+        ...prev,
+        page: 1 // Reset to page 1 when searching
+      }));
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  // Handle gender filter changes
+  useEffect(() => {
+    let count = 0;
+    
+    if (genderFilter.length > 0) {
+      count++;
+      // We can't directly filter by gender through the API, so we'll need to
+      // implement client-side filtering or update our API to support this
+    }
+    
+    if (searchTerm) {
+      count++;
+    }
+    
+    setActiveFilterCount(count);
+  }, [genderFilter, searchTerm]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
 
-  // Apply search filter with debounce
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setFilters(prev => ({
-        ...prev,
-        search: searchTerm,
-        page: 1 // Reset to first page when searching
-      }));
-    }, 500);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, setFilters]);
-
   // Handle page change
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({
+    setQueryParams(prev => ({
       ...prev,
       page
     }));
   };
 
-  // Handle patient selection for bulk actions
+  // Handle sorting change
+  const handleSortChange = (field: string) => {
+    setQueryParams(prev => {
+      const newDirection = 
+        prev.sortBy === field && prev.sortDirection === "ASC" ? "DESC" : "ASC";
+      
+      return {
+        ...prev,
+        sortBy: field,
+        sortDirection: newDirection
+      };
+    });
+  };
+
+  // Handle patient selection
   const handlePatientSelection = (patientId: string, checked: boolean) => {
     if (checked) {
       setSelectedPatients(prev => [...prev, patientId]);
@@ -82,7 +161,7 @@ export default function PatientsPage() {
     }
   };
 
-  // Handle bulk selection
+  // Handle select all
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedPatients(patients.map(patient => patient.id));
@@ -102,43 +181,52 @@ export default function PatientsPage() {
     });
   };
 
-  // Apply gender filter
-  useEffect(() => {
-    if (genderFilter.length > 0) {
-      setFilters(prev => ({
-        ...prev,
-        gender: genderFilter.join(','),
-        page: 1
-      }));
-    } else {
-      setFilters(prev => {
-        const { gender, ...rest } = prev;
-        return { ...rest, page: 1 };
-      });
-    }
-    
-    // Update filter count
-    setActiveFilterCount(genderFilter.length > 0 ? 1 : 0);
-  }, [genderFilter, setFilters]);
-
   // Reset filters
   const resetFilters = () => {
     setSearchTerm("");
     setGenderFilter([]);
-    setFilters({
+    setQueryParams({
       page: 1,
-      limit: 10,
+      size: 10,
+      sortBy: "lastName",
+      sortDirection: "ASC"
     });
   };
 
-  // Confirm delete dialog
+  // Confirm delete
   const confirmDelete = (patientId: string) => {
     setPatientToDelete(patientId);
     setIsDeleteDialogOpen(true);
   };
 
+  // Delete patient
+  const handleDeletePatient = async (id: string) => {
+    try {
+      await patientService.deletePatient(id);
+      
+      // Update local state
+      setPatients(patients.filter(patient => patient.id !== id));
+      setSelectedPatients(selectedPatients.filter(selectedId => selectedId !== id));
+      
+      // Show success notification
+      toast({
+        title: "Patient deleted",
+        description: "The patient record was successfully deleted.",
+        variant: "default"
+      });
+      
+      // Close dialog
+      setIsDeleteDialogOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Error deleting patient",
+        description: error.message || "Something went wrong",
+        variant: "destructive"
+      });
+    }
+  };
 
-  // Calculate age from date of birth
+  // Calculate age
   const calculateAge = (dateOfBirth: string | null): number => {
     if (!dateOfBirth) return 0;
 
@@ -154,19 +242,15 @@ export default function PatientsPage() {
     return age;
   };
 
-  // Format date to readable format
-  const formatDate = (dateString: string): string => {
-    try {
-      return format(new Date(dateString), 'MMM dd, yyyy');
-    } catch (error) {
-      return 'Invalid date';
-    }
+  // Get initials
+  const getInitials = (firstName: string, lastName: string): string => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   };
 
-  // Get initials from name
-  const getInitials = (firstName: string, lastName: string): string => {
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`;
-  };
+  // Filter patients by gender (client-side filtering when needed)
+  const filteredPatients = genderFilter.length > 0 
+    ? patients.filter(patient => genderFilter.includes(patient.gender as Gender))
+    : patients;
 
   return (
     <>
@@ -174,7 +258,10 @@ export default function PatientsPage() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl lg:text-3xl font-bold tracking-tight mb-2">Patients</h1>
-            <p className="text-muted-foreground">Manage your patients and their medical records.</p>
+            <p className="text-muted-foreground">
+              Manage your patients and their medical records.
+              {pagination && ` Total patients: ${pagination.totalElements}`}
+            </p>
           </div>
           <Button asChild>
             <Link href="/patients/add">
@@ -306,7 +393,7 @@ export default function PatientsPage() {
           </CardHeader>
 
           <CardContent>
-            {loading.table ? (
+            {loading ? (
               <div className="space-y-3">
                 <Skeleton className="h-8 w-full" />
                 <Skeleton className="h-24 w-full" />
@@ -315,18 +402,18 @@ export default function PatientsPage() {
                 <Skeleton className="h-24 w-full" />
                 <Skeleton className="h-8 w-full" />
               </div>
-            ) : patients.length === 0 ? (
+            ) : filteredPatients.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 text-center">
                 <div className="rounded-full bg-muted p-3 mb-3">
                   <Search className="h-6 w-6 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-semibold mb-1">No patients found</h3>
                 <p className="text-muted-foreground mb-4">
-                  {searchTerm
+                  {searchTerm || genderFilter.length > 0
                     ? "Try adjusting your search or filters to find what you're looking for."
                     : "Get started by adding your first patient."}
                 </p>
-                {!searchTerm && (
+                {!searchTerm && genderFilter.length === 0 && (
                   <Button asChild>
                     <Link href="/patients/add">
                       <Plus className="h-4 w-4 mr-2" />
@@ -343,19 +430,19 @@ export default function PatientsPage() {
                       <TableRow>
                         <TableHead className="w-[30px]">
                           <Checkbox
-                            checked={selectedPatients.length === patients.length && patients.length > 0}
+                            checked={selectedPatients.length === filteredPatients.length && filteredPatients.length > 0}
                             onCheckedChange={handleSelectAll}
                           />
                         </TableHead>
                         <TableHead className="w-[250px]">Patient</TableHead>
                         <TableHead className="hidden md:table-cell">Age / Gender</TableHead>
                         <TableHead className="hidden md:table-cell">Contact</TableHead>
-                        <TableHead className="hidden lg:table-cell">Status</TableHead>
+                        <TableHead className="hidden lg:table-cell">Cabinet</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {patients.map((patient) => (
+                      {filteredPatients.map((patient) => (
                         <TableRow key={patient.id}>
                           <TableCell>
                             <Checkbox
@@ -381,7 +468,7 @@ export default function PatientsPage() {
                                   href={`/patients/${patient.id}`}
                                   className="font-medium hover:underline"
                                 >
-                                  {`${patient.firstName} ${patient.lastName}`}
+                                  {`${patient.firstName} ${patient.middleName ? patient.middleName + ' ' : ''}${patient.lastName}`}
                                 </Link>
                                 <span className="text-xs text-muted-foreground md:hidden">
                                   {patient.email}
@@ -399,16 +486,13 @@ export default function PatientsPage() {
                             <div className="flex flex-col">
                               <span>{patient.email}</span>
                               <span className="text-xs text-muted-foreground">
-                                {patient.phoneNumber}
+                                {patient.phone}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="hidden lg:table-cell">
-                            <Badge
-                              variant={patient.active ? "default" : "secondary"}
-                              className={patient.active ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
-                            >
-                              {patient.active ? "Active" : "Inactive"}
+                            <Badge variant="outline" className="font-normal">
+                              {patient.cabinet.name}
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
@@ -448,25 +532,25 @@ export default function PatientsPage() {
                 </div>
 
                 {/* Pagination */}
-                {pagination.totalPages > 1 && (
+                {pagination && pagination.totalPages > 1 && (
                   <div className="flex items-center justify-between space-x-2 py-4">
                     <div className="text-sm text-muted-foreground">
                       Showing{" "}
                       <span className="font-medium">
-                        {(pagination.page - 1) * pagination.limit + 1}
+                        {(pagination.page - 1) * pagination.size + 1}
                       </span>{" "}
                       to{" "}
                       <span className="font-medium">
-                        {Math.min(pagination.page * pagination.limit, pagination.total)}
+                        {Math.min(pagination.page * pagination.size, pagination.totalElements)}
                       </span>{" "}
-                      of <span className="font-medium">{pagination.total}</span> results
+                      of <span className="font-medium">{pagination.totalElements}</span> results
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handlePageChange(pagination.page - 1)}
-                        disabled={pagination.page === 1}
+                        disabled={pagination.page <= 1}
                       >
                         Previous
                       </Button>
@@ -474,7 +558,7 @@ export default function PatientsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => handlePageChange(pagination.page + 1)}
-                        disabled={pagination.page === pagination.totalPages}
+                        disabled={pagination.page >= pagination.totalPages}
                       >
                         Next
                       </Button>
@@ -500,7 +584,7 @@ export default function PatientsPage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => handleDeletePatient(patientToDelete!)}
+              onClick={() => patientToDelete && handleDeletePatient(patientToDelete)}
               className="bg-destructive hover:bg-destructive/90"
             >
               Delete

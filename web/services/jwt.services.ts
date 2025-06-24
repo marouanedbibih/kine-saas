@@ -77,6 +77,7 @@ export class JwtService {
     return null;
   }
 
+
   /**
    * Retrieve and validate the stored JWT token
    * @returns TokenResult with the decoded and validated information
@@ -126,6 +127,30 @@ export class JwtService {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(this.TOKEN_KEY);
       localStorage.removeItem(this.USER_INFO_KEY);
+    }
+  }
+
+  /**
+   * Extract the role from a specific JWT token
+   * @param token The JWT token to extract role from
+   * @returns The user role from the token or null if extraction fails
+   */
+  extractRoleFromToken(token: string): string | null {
+    try {
+      const decoded = jwtDecode<JwtPayload>(token);
+      
+      // Check if token is expired
+      const isExpired = decoded.exp * 1000 <= Date.now();
+      
+      if (isExpired) {
+        console.warn('Token is expired');
+        return null;
+      }
+      
+      return decoded.role || null;
+    } catch (error) {
+      console.error('Failed to extract role from token:', error);
+      return null;
     }
   }
 }
